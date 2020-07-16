@@ -1,0 +1,8 @@
+kubeconfig
+plan
+.terraform/plugins
+*.tfstate
+*.tfstate.backup
+terraform.tfvars
+__pycache__
+*.py.tar.gz

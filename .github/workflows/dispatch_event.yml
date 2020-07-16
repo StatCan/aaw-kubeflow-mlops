@@ -1,0 +1,28 @@
+name: Receive Repository Dispatch Payload
+on: repository_dispatch
+
+jobs:
+  process-repository-dispatch:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Copy Repository Contents
+      uses: actions/checkout@master
+
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+
+    - name: Install Python dependencies
+      run: |
+        pip3 install requests --upgrade
+
+    - name: Handle Repo Dispatch Payload
+      id: rd
+      run: |
+        python3 event_dispatcher.py --event_type "${{ github.event.action }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        KFP_DSHB: ${{ secrets.KFP_DSHB }}
+      working-directory: .github/events
