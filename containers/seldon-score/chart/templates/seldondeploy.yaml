@@ -1,0 +1,40 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  name: {{ .Values.name }}-deployment
+  annotations:
+    seldon.io/grpc-read-timeout: '1000000'
+    seldon.io/rest-connection-timeout: '1000000'
+    seldon.io/rest-read-timeout: '1000000'
+  predictors:
+  - componentSpecs:
+    - spec:
+      {{- if .Values.imagePullSecrets }}
+        imagePullSecrets:
+  {{ toYaml .Values.imagePullSecrets | indent 8 }}
+      {{- end }}
+        containers:
+        - env:
+            - name: PREDICTIVE_UNIT_SERVICE_PORT
+              value: "{{ .Values.port }}"
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          name: {{ .Values.name }}-classifier
+          # env:
+          # - name: FLASK_SINGLE_THREADED
+          #   value: '1'
+          imagePullPolicy: Always
+          ports:
+          - containerPort: {{ .Values.port }}
+            name: http
+    graph:
+      children: []
+      endpoint:
+        type: REST
+        service_port: {{ .Values.port }}
+      name: {{ .Values.name }}-classifier
+      type: MODEL
+    name: {{ .Values.name }}-predictor
+    replicas: 1

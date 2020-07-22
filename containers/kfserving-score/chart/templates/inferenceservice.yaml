@@ -1,0 +1,20 @@
+apiVersion: serving.kubeflow.org/v1alpha2
+kind: InferenceService
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    controller-tools.k8s.io: "1.0"
+spec:
+  default:
+    predictor:
+      custom:
+        container:
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          resources:
+              limits:
+                cpu: {{ .Values.limits.cpu }}
+                memory: {{ .Values.limits.memory }}
+              requests:
+                cpu: {{ .Values.requests.cpu }}
+                memory: {{ .Values.requests.memory }}

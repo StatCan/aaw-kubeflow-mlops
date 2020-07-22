@@ -1,0 +1,6 @@
+ {
+    "run_name": "kfp notebook execution",
+    "existing_cluster_id":"{{CLUSTER_ID}}",
+    "notebook_task":{"notebook_path":"/Shared/{{NOTEBOOK_NAME}}",
+                    "base_parameters":{{NOTEBOOK_PARAMETERS}}}
+}

@@ -1,0 +1,38 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: mlops
+  namespace: serving
+spec:
+  name: mlops-deployment
+  annotations:
+    seldon.io/grpc-read-timeout: '1000000'
+    seldon.io/rest-connection-timeout: '1000000'
+    seldon.io/rest-read-timeout: '1000000'
+  predictors:
+  - componentSpecs:
+    - spec:
+        imagePullSecrets:
+          - name: k8scc01covidmlopsacr-registry-connection
+        containers:
+        - env:
+            - name: PREDICTIVE_UNIT_SERVICE_PORT
+              value: "8080"
+          image: "k8scc01covidmlopsacr.azurecr.io/mlops/seldon-scoring:da46e7f8-8e34-472c-b0ab-40a35dd9cf4c"
+          name: mlops-classifier
+          # env:
+          # - name: FLASK_SINGLE_THREADED
+          #   value: '1'
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8080
+            name: http
+    graph:
+      children: []
+      endpoint:
+        type: REST
+        service_port: 8080
+      name: mlops-classifier
+      type: MODEL
+    name: mlops-predictor
+    replicas: 1

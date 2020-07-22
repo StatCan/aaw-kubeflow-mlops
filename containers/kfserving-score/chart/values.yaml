@@ -1,0 +1,11 @@
+name: KFServing scoring model
+namespace: serving
+image:
+  name: statcan/kfserving-score
+  tag: kfserving
+limits:
+  cpu: 1
+  memory: 4Gi
+requests:
+  cpu: 1
+  memory: 4Gi
