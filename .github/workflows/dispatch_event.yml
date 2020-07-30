@@ -1,4 +1,6 @@
 name: Receive Repository Dispatch Payload
+# The pipeline is triggered on:
+#  - Repository Dispatch
 on: repository_dispatch
 
 jobs:

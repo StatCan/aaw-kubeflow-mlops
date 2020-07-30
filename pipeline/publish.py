@@ -5,6 +5,12 @@ from utils.auth.azure import get_access_token
 
 
 def main():
+    # Demonstrating how to access KFP API (publish pipeine)
+    # With an authentication token provided by Azure AD
+    #
+    # Usage:
+    # python publish.py --run_id <run_id> --kfp_host <kfp_host> --pipeline_file_path <pipeline_file_path> --pipeline_name <pipeline_name> --tenant <tenant> --service_principal <Service Principal> --sp_secret <Service Principal Secret> --sp_audience <Audience>  # noqa: E501
+
     parser = argparse.ArgumentParser("publish pipeline")
 
     parser.add_argument(

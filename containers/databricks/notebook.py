@@ -3,7 +3,6 @@ import time
 argument_one = getArgument("argument_one")  # noqa: F821, E501
 argument_two = getArgument("argument_two")  # noqa: F821, E501
 
-
 print("Argument one {}".format(argument_one))
 print("Argument two {}".format(argument_two))
 

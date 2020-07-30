@@ -1,4 +1,6 @@
 name: CD
+# The pipeline is triggered on:
+#  - Repository Dispatch type of "model is registered"
 on:
   repository_dispatch:
     types: [Model is registered]
@@ -82,6 +84,8 @@ jobs:
           image:
             repository: "${{ secrets.SELDON_MODEL_IMAGE_NAME }}"
             tag: "$RUN_ID"
+          imagePullSecrets:
+            - name: k8scc01covidmlopsacr-registry-connection
 
   deploy_to_uat:
     runs-on: ubuntu-latest

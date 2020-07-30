@@ -1,6 +1,17 @@
 # Kubeflow MLOps
 
-The repository contains a sample created from the Kubeflow End-to-End Pipeline Example on Azure. It builds a Kubeflow pipeline(KFP) with GitHub actions that trains a Tensorflow convolutional neural network model. The model is registered in Azure AML, Kubeflow, and MLFlow with a defined promotion process. The structure of this sample should make it easier to “bring your own code” and adopt the template for a real-life machine learning project.
+This repository contains examples of completely integrated Kubeflow End-to-End Pipelines (KFP) usin GitHub actions. Focus is on the creation of pluggable components that can make it easier to build your own pipelines enabling more advanced machine learning projects.
+
+The current pipelines that have been created against the pluggable components are:
+
+* [Default](pipeline/train/default.py)
+* [Convolutional Neural Network (CNN)](pipeline/train/cnn.py)
+
+## KubeFlow
+
+* [List Pipelines](pipeline/list.py)
+* [Publish Pipeline](pipeline/publish.py)
+* [Run Pipeline](pipeline/run.py)
 
 ## Integrations
 

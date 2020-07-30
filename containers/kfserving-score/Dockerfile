@@ -4,7 +4,9 @@ ENV APP_HOME /app
 ENV WORKERS 1
 ENV THREADS 8
 ENV PORT 8000
+
 WORKDIR $APP_HOME
+
 COPY score.py requirements.txt model.h5 ./
 
 RUN pip install --no-cache-dir -r ./requirements.txt

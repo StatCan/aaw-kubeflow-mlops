@@ -4,6 +4,12 @@ from utils.auth.azure import get_access_token
 
 
 def main():
+    # Demonstrating how to access KFP API (run pipeine)
+    # With an authentication token provided by Azure AD
+    #
+    # Usage:
+    # python run.py --kfp_host <kfp_host> --resource_group <resource_group> --workspace <workspace> --pipeline_id <pipeline_id> --run_path <run_path> --experiment_name <experiment_name> --tenant <tenant> --service_principal <Service Principal> --sp_secret <Service Principal Secret> --sp_audience <Audience> --datasets <datasets>  # noqa: E501
+
     parser = argparse.ArgumentParser("run pipeline")
 
     parser.add_argument(

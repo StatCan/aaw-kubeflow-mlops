@@ -8,7 +8,7 @@ def main():
     # With an authentication token provided by Azure AD
     #
     # Usage:
-    # python sample_api.py --kfp_host <kfp_host> --tenant <tenant> --service_principal <Service Principal> --sp_secret <Service Principal Secret> --sp_audience <Audience>  # noqa: E501
+    # python list.py --kfp_host <kfp_host> --tenant <tenant> --service_principal <Service Principal> --sp_secret <Service Principal Secret> --sp_audience <Audience>  # noqa: E501
 
     parser = argparse.ArgumentParser("run pipeline")
 

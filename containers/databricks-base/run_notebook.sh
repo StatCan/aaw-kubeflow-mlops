@@ -18,12 +18,10 @@ sed -i 's/{{CLUSTER_ID}}/'$CLUSTER_ID'/g' run_config.json
 sed  -i 's/{{NOTEBOOK_PARAMETERS}}/'"$NOTEBOKK_PARAMETERS"'/g' run_config.json
 sed -i 's/{{NOTEBOOK_NAME}}/'$RUN_ID'/g' run_config.json
 
-
 run_id=$(databricks runs submit --json-file run_config.json | jq -r '.run_id')
 databricks runs get --run-id $run_id
 
 SECONDS=0
-
 while [[ SECONDS -lt 600 ]]; do
  STATUS=$(databricks runs get --run-id $run_id | jq -r '.state.life_cycle_state')
  if [ $STATUS == 'TERMINATED' ]; then
