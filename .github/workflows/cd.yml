@@ -95,7 +95,6 @@ jobs:
       uses: 'statcan/actions/helm@master'
       env:
         KUBECONFIG: /github/home/KUBECONFIG
-        RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
       with:
         release: 'seldon-score'
         namespace: 'serving'
@@ -105,7 +104,7 @@ jobs:
         values: |
           image:
             repository: "${{ secrets.SELDON_MODEL_IMAGE_NAME }}"
-            tag: "$RUN_ID"
+            tag: "${{ steps.deh.outputs.RUN_ID }}"
           imagePullSecrets:
             - name: k8scc01covidmlopsacr-registry-connection
 
