@@ -1,7 +1,7 @@
 name: seldon
 namespace: serving
 image:
-  name: statcan/seldon-score
+  repository: statcan/seldon-score
   tag: seldon
 port: 8080
 # imagePullSecrets:

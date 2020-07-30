@@ -20,7 +20,7 @@ spec:
         - env:
             - name: PREDICTIVE_UNIT_SERVICE_PORT
               value: "{{ .Values.port }}"
-          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           name: {{ .Values.name }}-classifier
           # env:
           # - name: FLASK_SINGLE_THREADED
