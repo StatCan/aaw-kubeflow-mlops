@@ -42,11 +42,25 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       working-directory: .github/events
 
+    - name: Obtain JWT token
+      env:
+        KFP_PIPELINE_NAME: ${{ secrets.KFP_PIPELINE_NAME }}
+        KFP_HOST: ${{ secrets.KFP_HOST }}
+        RUN_ID: ${{ github.run_id }}
+      run: |
+        export JWT_TOKEN=$(python azure-token.py --tenant ${{ secrets.tenant }} \
+                                                 --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+                                                 --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+                                                 --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+                                                 2>&1 >/dev/null)
+        echo "::set-env name=JWT_TOKEN::$JWT_TOKEN"
+      working-directory: pipeline
+
     - name: Download model
       run: |
         cd $GITHUB_WORKSPACE/containers/seldon-score
-        mlflow_run_id=$(curl -d '{"experiment_ids":['$MLFLOW_EXPERIMENT'],"filter":"tags.external_run_id='\'''$RUN_ID''\''"}' ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/runs/search | jq -r '.runs[0].info.run_id')
-        curl -L '${{ secrets.MLFLOW_URL }}/get-artifact?path=model/data/model.h5&run_uuid='$mlflow_run_id > model.h5
+        mlflow_run_id=$(curl -H "Authorization: Bearer ${ JWT_TOKEN }" -d '{"experiment_ids":['$MLFLOW_EXPERIMENT'],"filter":"tags.external_run_id='\'''$RUN_ID''\''"}' ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/runs/search | jq -r '.runs[0].info.run_id')
+        curl -H "Authorization: Bearer ${ JWT_TOKEN }" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.h5&run_uuid='$mlflow_run_id > model.h5
         echo "::set-env name=mlflow_run_id::$mlflow_run_id"
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
@@ -62,8 +76,8 @@ jobs:
 
     - name: Promote model to Staging
       run: |
-        body=$(curl ${{ secrets.MLFLOW_URL }}/ajax-api/2.0/preview/mlflow/model-versions/search?filter=run_id%3D%27${mlflow_run_id}%27 | jq '.model_versions[0] | {name: .name, version: .version, stage: $stage}' --arg stage Staging --compact-output)
-        curl -d $body ${{ secrets.MLFLOW_URL }}/ajax-api/2.0/preview/mlflow/model-versions/transition-stage
+        body=$(curl -H "Authorization: Bearer ${ JWT_TOKEN }" ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/model-versions/search?filter=run_id%3D%27${mlflow_run_id}%27 | jq '.model_versions[0] | {name: .name, version: .version, stage: $stage}' --arg stage Staging --compact-output)
+        curl -H "Authorization: Bearer ${ JWT_TOKEN }" -d $body ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/model-versions/transition-stage
 
     - run: |
         mkdir -p /home/runner/work/_temp/_github_home/
