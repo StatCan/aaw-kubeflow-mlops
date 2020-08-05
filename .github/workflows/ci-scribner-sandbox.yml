@@ -21,4 +21,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Test echo
-        run: echo "Triggered for ${{ github.event.issue.number }}"
+        run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
