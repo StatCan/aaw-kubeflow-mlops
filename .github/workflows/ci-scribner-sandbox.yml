@@ -1,0 +1,24 @@
+name: CI Scribner Pipeline
+# The pipeline is triggered on:
+#  - PR to scribner-sandbox (code_quality_checks only)
+#  - Push to scribner-sandbox (full cycle)
+#  - PR comment "/build-images" (code_quality_checks + build images)
+#  - PR comment "/build-pipeline" (code_quality_checks + build kfp pipeline)
+on:
+  push:
+    branches: [scribner-sandbox]
+  pull_request:
+    branches: [scribner-sandbox]
+  issue_comment:
+    types: [created]  # Handles /triggers
+
+env:
+  ACR_REGISTRY: "k8scc01covidmlopsacr"
+  ACR_REPOSITORY: "mlops"  # TODO: Can I change this?
+
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test echo
+        run: echo "Triggered for ${{ github.event.issue.number }}"
