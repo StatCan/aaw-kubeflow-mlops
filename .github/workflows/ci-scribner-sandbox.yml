@@ -6,9 +6,9 @@ name: CI Scribner Pipeline
 #  - PR comment "/build-pipeline" (code_quality_checks + build kfp pipeline)
 on:
   push:
-    branches: [scribner-sandbox]
+    branches: [scribner-pipeline]
   pull_request:
-    branches: [scribner-sandbox]
+    branches: [scribner-pipeline]
   issue_comment:
     types: [created]  # Handles /triggers
 
