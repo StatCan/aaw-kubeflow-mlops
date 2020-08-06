@@ -108,7 +108,7 @@ jobs:
           echo "pipeline id: $PIPELINE_ID"
           echo "::set-env name=PUBLISHED_PIPELINE_ID::$PIPELINE_ID"
 
-      - uses: schdck/create-env-json@v1
+      - uses: schdck/create-env-json@v2
         id: create-env
         with:
           file-name: 'pl_args.json'
@@ -127,6 +127,9 @@ jobs:
         #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
         #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
         run: |
+          echo ::set-env name=pl_args::\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\'
+          run: echo "::set-env name=event_sha::+refs/pull/${{ github.event.issue.number }}/merge"
+
           pwd
           echo `pwd`
           export $PYTHONPATH=$PYTHONPATH:../../pipeline
