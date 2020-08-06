@@ -77,9 +77,10 @@ jobs:
         run: |
           pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
 
-#      # Look at the workspace interactively
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v2
+      # Look at the workspace interactively
+      - name: Setup tmate session
+        working-directory: scribner/pipeline
+        uses: mxschmitt/action-tmate@v2
 
       - name: Build pipeline
         working-directory: scribner/pipeline
