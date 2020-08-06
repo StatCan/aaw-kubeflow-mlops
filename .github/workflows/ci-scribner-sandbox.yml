@@ -127,8 +127,7 @@ jobs:
         #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
         #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
         run: |
-          echo ::set-env name=pl_args::\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\'
-          run: echo "::set-env name=event_sha::+refs/pull/${{ github.event.issue.number }}/merge"
+          echo ::set-env name=PL_ARGS::\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\'
 
           pwd
           echo `pwd`
