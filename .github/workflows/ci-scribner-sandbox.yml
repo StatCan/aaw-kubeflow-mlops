@@ -54,7 +54,9 @@ jobs:
   build_kfp_pipeline_average:
     runs-on: ubuntu-latest
     needs: [code_quality_checks]  # add build_images later
-    if: github.event_name == 'push' || github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline')
+    # DEBUG: Currently firing on PRs as well just for ease of testing
+#    if: github.event_name == 'push' || github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline')
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline')
     steps:
       - uses: actions/checkout@v2
 #      Why do I need this both above and below checkout?
@@ -74,6 +76,10 @@ jobs:
         # Pinned to a commit - is that good or bad?  Can't update on is, but we also don't stay in sync if it updates.
         run: |
           pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
+
+      # Look at the workspace interactively
+      - name: Setup tmate session
+          uses: mxschmitt/action-tmate@v2
 
       - name: Build pipeline
         working-directory: scribner/pipeline
@@ -103,6 +109,7 @@ jobs:
           echo "::set-env name=PUBLISHED_PIPELINE_ID::$PIPELINE_ID"
 
       - name: Run Pipeline ID
+        working-directory: scribner/pipeline
         env:
           PL_ARGS: '{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}'
         # Commented out of run command below:
