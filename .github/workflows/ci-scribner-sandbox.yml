@@ -111,7 +111,7 @@ jobs:
       - uses: schdck/create-env-json@v2
         id: create-env
         with:
-          file-name: 'pl_args.json'
+          file-name: 'scribner/pipeline/pl_args.json'
           a: 1
           b: 2
           c: 3
