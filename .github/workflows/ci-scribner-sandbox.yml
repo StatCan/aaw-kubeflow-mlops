@@ -79,7 +79,7 @@ jobs:
 
       # Look at the workspace interactively
       - name: Setup tmate session
-          uses: mxschmitt/action-tmate@v2
+        uses: mxschmitt/action-tmate@v2
 
       - name: Build pipeline
         working-directory: scribner/pipeline
