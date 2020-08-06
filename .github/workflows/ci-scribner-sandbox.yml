@@ -131,8 +131,6 @@ jobs:
 
           pwd
           echo `pwd`
-          export $PYTHONPATH=$PYTHONPATH:../../pipeline
-          echo $PYTHONPATH
           echo $PL_ARGS
           cat pl_args.json
           python run_pipeline_average.py --kfp_host ${{ secrets.KFP_HOST }} \
