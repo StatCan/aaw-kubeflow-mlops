@@ -2,6 +2,10 @@ import json
 
 import kfp
 import argparse
+
+# DEBUG: Temp hack while I'm working in a separate directory but still need utils
+import sys
+sys.path.append("../../")
 from utils.auth.azure import get_access_token
 
 
