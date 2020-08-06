@@ -113,7 +113,7 @@ def main():
     client.run_pipeline(exp.id,
                         job_name=args.run_name,
                         params=pipeline_params,
-                        pipeline_id=pipeline_params)
+                        pipeline_id=args.pipeline_id)
 
 
 if __name__ == '__main__':
