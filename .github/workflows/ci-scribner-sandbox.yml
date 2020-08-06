@@ -108,6 +108,17 @@ jobs:
           echo "pipeline id: $PIPELINE_ID"
           echo "::set-env name=PUBLISHED_PIPELINE_ID::$PIPELINE_ID"
 
+      - uses: schdck/create-env-json@v1
+        id: create-env
+        with:
+          file-name: 'pl_args.json'
+          a: 1
+          b: 2
+          c: 3
+          d: 10
+          e: 20
+
+
       - name: Run Pipeline ID
         working-directory: scribner/pipeline
         env:
@@ -121,6 +132,7 @@ jobs:
           export $PYTHONPATH=$PYTHONPATH:../../pipeline
           echo $PYTHONPATH
           echo $PL_ARGS
+          cat pl_args.json
           python run_pipeline_average.py --kfp_host ${{ secrets.KFP_HOST }} \
                                          --pipeline_id $PUBLISHED_PIPELINE_ID \
                                          --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
@@ -128,4 +140,4 @@ jobs:
                                          --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
                                          --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                                          --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                                         --pl_args $PL_ARGS
+                                         --pl_args `cat pl_args.json`
