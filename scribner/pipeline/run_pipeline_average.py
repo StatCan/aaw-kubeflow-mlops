@@ -108,11 +108,12 @@ def main():
     # pipeline_params["workspace"] = args.workspace
     # pipeline_params["token"] = token
     pipeline_params = json.loads(args.pl_args)
+    print(f"pipeline_params = {pipeline_params}")
 
     client.run_pipeline(exp.id,
                         job_name=args.run_name,
                         params=pipeline_params,
-                        pipeline_id=args.pipeline_id)
+                        pipeline_id=pipeline_params)
 
 
 if __name__ == '__main__':
