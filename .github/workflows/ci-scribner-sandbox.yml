@@ -111,11 +111,15 @@ jobs:
       - name: Run Pipeline ID
         working-directory: scribner/pipeline
         env:
+          PYTHONPATH: $PYTHONPATH:../../pipeline
           PL_ARGS: '{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}'
         # Commented out of run command below:
         #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
         #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
         run: |
+          pwd
+          echo `pwd`
+          echo $PYTHONPATH
           python run_pipeline_average.py --kfp_host ${{ secrets.KFP_HOST }} \
                                          --pipeline_id $PUBLISHED_PIPELINE_ID \
                                          --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
