@@ -118,21 +118,22 @@ jobs:
       - name: Update Pipeline Definition with Pinned Containers
         working-directory: scribner/pipeline
         env:
-          PINNED_CONTAINER_TAG: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
+          PINNED_CONTAINER_PATH: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
           LOCAL_EVENT_GIT_SHA: ${{ needs.code_quality_checks.outputs.event_git_sha }}
         # Do this?  Or make input args for all containers in the pipeline and pass that way?
         # Tee for debugging so I know what the result looks like
+        # Do a global parameter expansion of the container path because it has slashes that need escaping for sed
         run: |
           echo event_git_sha is ${{ needs.code_quality_checks.outputs.event_git_sha }}
           echo LOCAL_EVENT_GIT_SHA is ${LOCAL_EVENT_GIT_SHA}
-          echo PINNED_CONTAINER_TAB is ${PINNED_CONTAINER_TAG}
-          sed -E 's/^AVERAGE_OP_CONTAINER = .*$/AVERAGE_OP_CONTAINER = "'${PINNED_CONTAINER_TAG}'"/' build_pipeline_average.py | tee build_pipeline_average.py
+          echo PINNED_CONTAINER_PATH is ${PINNED_CONTAINER_PATH}
+          sed -E 's/^AVERAGE_OP_CONTAINER = .*$/AVERAGE_OP_CONTAINER = '${PINNED_CONTAINER_PATH//\//\\/}'/' build_pipeline_average.py | tee build_pipeline_average.py
 
-      # Look at the workspace interactively
-      - name: Setup tmate session
-        env:
-          PINNED_CONTAINER_TAG: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
-        uses: mxschmitt/action-tmate@v2
+#      # Look at the workspace interactively
+#      - name: Setup tmate session
+#        env:
+#          PINNED_CONTAINER_PATH: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
+#        uses: mxschmitt/action-tmate@v2
 
       - name: Build pipeline
         working-directory: scribner/pipeline
