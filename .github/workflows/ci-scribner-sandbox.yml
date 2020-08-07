@@ -20,6 +20,9 @@ jobs:
   code_quality_checks:
     runs-on: ubuntu-latest
     if: contains(github.event.comment.body, '/scribner-build-images') || contains(github.event.comment.body, '/scribner-build-pipeline') || github.event_name != 'issue_comment'
+    outputs:
+      event_sha: ${{ env.event_sha }}
+      event_git_sha: ${{ env.event_git_sha }}
     steps:
       - name: Test echo
         run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
@@ -33,11 +36,15 @@ jobs:
       - name: GetREFSHA
         if: github.event_name != 'issue_comment'
         run: echo "::set-env name=event_sha::${{ github.ref }}"
+#     Check out code and save the checked out git sha (if this is a comment, it wont be in github.sha)
       - if: github.event_name == 'issue_comment'
         name: Checkout PR code
         run: |
           git fetch origin ${{ env.event_sha }}
           git checkout FETCH_HEAD
+        # Should I do this directly instead of via env?  It doesn't get used in here.
+      - name: Log git SHA for output
+        run: echo ::set-env name=event_git_sha::$(git rev-parse HEAD)
 #       apply code checks - skipped for now
 #      - uses: TrueBrain/actions-flake8@master
 #        if: "true"
@@ -48,15 +55,42 @@ jobs:
 #        with:
 #          path: "containers"
 
-# TODO.  Also add as dependency below
-#  build_images:
+  build_images:
+    runs-on: ubuntu-latest
+    needs: code_quality_checks
+    # All sub steps use a similar if statement.  I think this pattern is so you could have /build-specific-image?
+    # Temp change to events for debugging
+    #    if: github.event_name == 'push' || github.event_name == 'issue_comment'
+    if: github.event_name == 'push' || github.event_name == 'issue_comment' || github.event_name == 'pull_request'
+    steps:
+      - name: Build Average Image
+#        if: ... <--This existed in template but it was same as above.  Whats up with that?
+#                   Think its so you could have /build-specific-image
+        # Would be nice if this task returned output of the path to the built image in acr.  Do PR for that?
+        uses: statcan/actions/acr-task@master  # Pin to version?
+        with:
+          service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
+          service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
+          tenant: ${{ secrets.TENANT }}
+          registry: ${{ env.ACR_REGISTRY }}
+          repository: ${{ env.ACR_REPOSITORY }}
+          repository_crds: ${{ secrets.REPOSITORY_CRDS }}
+          # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
+          # I had a case where code_quality_checks.outputs.event_sha wasn't available so it just passed a blank
+          # and the task didn't catch that as bad
+          branch: ${{ needs.code_quality_checks.outputs.event_sha }}
+          # Template tagged this with latest, but I think sha makes more sense?  Then do sed to inject in pipeline
+          tag: ${{ needs.code_quality_checks.outputs.event_git_sha }}  # This will default to commit sha anyway
+          image: average
+          folder: scribner/containers/average
+
 
   build_kfp_pipeline_average:
     runs-on: ubuntu-latest
-    needs: [code_quality_checks]  # add build_images later
+    needs: [code_quality_checks, build_images]
     # DEBUG: Currently firing on PRs as well just for ease of testing
 #    if: github.event_name == 'push' || github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline')
-    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline')
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline'))
     steps:
       - uses: actions/checkout@v2
 #      Why do I need this both above and below checkout?
@@ -77,9 +111,27 @@ jobs:
         run: |
           pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
 
-      # Look at the workspace interactively
-      - name: Setup tmate session
-          uses: mxschmitt/action-tmate@v2
+#      # Look at the workspace interactively
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v2
+
+      - name: Update Pipeline Definition with Pinned Containers
+        working-directory: scribner/pipeline
+        env:
+          PINNED_CONTAINER_PATH: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
+        # Do this?  Or make input args for all containers in the pipeline and pass that way?
+        # Tee for debugging so I know what the result looks like
+        # Do a global parameter expansion of the container path because it has slashes that need escaping for sed
+        run: |
+          echo PINNED_CONTAINER_PATH is ${PINNED_CONTAINER_PATH}
+          sed -iE 's/^AVERAGE_OP_CONTAINER = .*$/AVERAGE_OP_CONTAINER = "'${PINNED_CONTAINER_PATH//\//\\/}'"/' build_pipeline_average.py
+          cat build_pipeline_average.py
+
+#      # Look at the workspace interactively
+#      - name: Setup tmate session
+#        env:
+#          PINNED_CONTAINER_PATH: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
+#        uses: mxschmitt/action-tmate@v2
 
       - name: Build pipeline
         working-directory: scribner/pipeline
@@ -108,14 +160,33 @@ jobs:
           echo "pipeline id: $PIPELINE_ID"
           echo "::set-env name=PUBLISHED_PIPELINE_ID::$PIPELINE_ID"
 
+      # Hacky way to get a JSON string into the args below.  Couldn't get the escaping of quotes to work right from an
+      # environment variable
+      - uses: schdck/create-env-json@v2
+        id: create-env
+        with:
+          file-name: 'scribner/pipeline/pl_args.json'
+          a: 1
+          b: 2
+          c: 3
+          d: 10
+          e: 20
+
+
       - name: Run Pipeline ID
         working-directory: scribner/pipeline
-        env:
-          PL_ARGS: '{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}'
+#        env:
+#          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
         # Commented out of run command below:
         #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
         #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
         run: |
+          echo ::set-env name=PL_ARGS::\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\'
+
+          pwd
+          echo `pwd`
+          echo $PL_ARGS
+          cat pl_args.json
           python run_pipeline_average.py --kfp_host ${{ secrets.KFP_HOST }} \
                                          --pipeline_id $PUBLISHED_PIPELINE_ID \
                                          --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
@@ -123,4 +194,4 @@ jobs:
                                          --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
                                          --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                                          --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                                         --pl_args $PL_ARGS
+                                         --pl_args `cat pl_args.json`

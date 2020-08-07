@@ -6,6 +6,9 @@ from kfp import compiler
 import time
 
 
+AVERAGE_OP_CONTAINER = "k8scc01covidacr.azurecr.io/kfp-components/average:v1"
+
+
 def average_op(*numbers):
     """
     Factory for average ContainerOps
@@ -22,7 +25,7 @@ def average_op(*numbers):
         
     return dsl.ContainerOp(
         name="average",  # What will show up on the pipeline viewer
-        image="k8scc01covidacr.azurecr.io/kfp-components/average:v1",  # The image that KFP runs to do the work
+        image=AVERAGE_OP_CONTAINER,  # The image that KFP runs to do the work
         arguments=numbers,  # Passes each number as a separate (string) command line argument
         # Script inside container writes the result (as a string) to out.txt, which 
         # KFP reads for us and brings back here as a string

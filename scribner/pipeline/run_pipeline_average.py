@@ -2,6 +2,10 @@ import json
 
 import kfp
 import argparse
+
+# DEBUG: Temp hack while I'm working in a separate directory but still need utils
+import sys
+sys.path.append("../../pipeline")
 from utils.auth.azure import get_access_token
 
 
@@ -103,7 +107,8 @@ def main():
     # pipeline_params["resource_group"] = args.resource_group
     # pipeline_params["workspace"] = args.workspace
     # pipeline_params["token"] = token
-    pipeline_params = json.loads(args.pl_args)
+    pipeline_params = {k.lower(): v for k, v in json.loads(args.pl_args).items()}
+    print(f"pipeline_params = {pipeline_params}")
 
     client.run_pipeline(exp.id,
                         job_name=args.run_name,
