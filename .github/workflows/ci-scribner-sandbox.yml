@@ -20,6 +20,8 @@ jobs:
   code_quality_checks:
     runs-on: ubuntu-latest
     if: contains(github.event.comment.body, '/scribner-build-images') || contains(github.event.comment.body, '/scribner-build-pipeline') || github.event_name != 'issue_comment'
+    outputs:
+      event_sha: ${{ env.event_sha }}
     steps:
       - name: Test echo
         run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
