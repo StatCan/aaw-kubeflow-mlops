@@ -23,7 +23,7 @@ jobs:
     outputs:
       event_sha: ${{ env.event_sha }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@master
       - name: GetPRSHA
         if: github.event_name == 'issue_comment'
         run: echo "::set-env name=event_sha::+refs/pull/${{ github.event.issue.number }}/merge"
