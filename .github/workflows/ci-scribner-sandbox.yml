@@ -42,7 +42,9 @@ jobs:
         run: |
           git fetch origin ${{ env.event_sha }}
           git checkout FETCH_HEAD
-          echo ::set-env name=event_git_sha::$(git rev-parse HEAD)
+        # Should I do this directly instead of via env?  It doesn't get used in here.
+      - name: Log git SHA for output
+        run: echo ::set-env name=event_git_sha::$(git rev-parse HEAD)
 #       apply code checks - skipped for now
 #      - uses: TrueBrain/actions-flake8@master
 #        if: "true"
