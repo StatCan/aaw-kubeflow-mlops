@@ -22,6 +22,7 @@ jobs:
     if: contains(github.event.comment.body, '/scribner-build-images') || contains(github.event.comment.body, '/scribner-build-pipeline') || github.event_name != 'issue_comment'
     outputs:
       event_sha: ${{ env.event_sha }}
+      event_git_sha: ${{ env.event_git_sha }}
     steps:
       - name: Test echo
         run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
@@ -35,11 +36,13 @@ jobs:
       - name: GetREFSHA
         if: github.event_name != 'issue_comment'
         run: echo "::set-env name=event_sha::${{ github.ref }}"
+#     Check out code and save the checked out git sha (if this is a comment, it wont be in github.sha)
       - if: github.event_name == 'issue_comment'
         name: Checkout PR code
         run: |
           git fetch origin ${{ env.event_sha }}
           git checkout FETCH_HEAD
+          echo "::set-env name=event_git_sha::`git rev-parse HEAD`"
 #       apply code checks - skipped for now
 #      - uses: TrueBrain/actions-flake8@master
 #        if: "true"
@@ -70,9 +73,12 @@ jobs:
           registry: ${{ env.ACR_REGISTRY }}
           repository: ${{ env.ACR_REPOSITORY }}
           repository_crds: ${{ secrets.REPOSITORY_CRDS }}
+          # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
+          # I had a case where code_quality_checks.outputs.event_sha wasn't available so it just passed a blank
+          # and the task didn't catch that as bad
           branch: ${{ needs.code_quality_checks.outputs.event_sha }}
           # Template tagged this with latest, but I think sha makes more sense?  Then do sed to inject in pipeline
-          tag: ${{ needs.code_quality_checks.outputs.event_sha }}  # This will default to commit sha anyway
+          tag: ${{ needs.code_quality_checks.outputs.event_git_sha }}  # This will default to commit sha anyway
           image: average
           folder: scribner/containers/average
 
@@ -113,7 +119,7 @@ jobs:
           IMAGE_REPO_NAME: "k8scc01covidmlopsacr.azurecr.io/mlops"  # This should be inherrited from above, but hard code for now
         # Do this?  Or make input args for all containers in the pipeline and pass that way?
         # Tee for debugging so I know what the result looks like
-        run: sed -E 's/^AVERAGE_OP_CONTAINER = .*$/AVERAGE_OP_CONTAINER = "'${IMAGE_REPO_NAME}'"/' build_pipeline_average.py | tee build_pipeline_average.py
+        run: sed -E 's/^AVERAGE_OP_CONTAINER = .*$/AVERAGE_OP_CONTAINER = "'${IMAGE_REPO_NAME}'\/average:${{ needs.code_quality_checks.outputs.event_git_sha }}"/' build_pipeline_average.py | tee build_pipeline_average.py
 
       - name: Build pipeline
         working-directory: scribner/pipeline
