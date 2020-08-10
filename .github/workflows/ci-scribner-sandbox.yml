@@ -208,7 +208,7 @@ jobs:
                                          --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                                          --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
                                          --pl_args $pl_args \
-                    grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
+                    | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
           echo ::set-env name=RUN_LINK::echo $run_link
 
       - uses: unsplash/comment-on-pr@master
