@@ -202,9 +202,7 @@ jobs:
                                          --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
                                          --pl_args `cat pl_args.json` \
                     grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
-          echo ::set-env name=run_link::echo $run_link
-        outputs:
-          run_link: ${{ env.run_link }}
+          echo ::set-env name=RUN_LINK::echo $run_link
 
       - name: Comment back Pipeline Run Link
         uses: actions/github-script@v2
@@ -216,7 +214,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Run link is: {{ $steps.run-pipeline.outputs.run_link }}'
+              body: 'Run link is: $RUN_LINK'
             })
 
 
