@@ -25,6 +25,17 @@ jobs:
       event_sha: ${{ env.event_sha }}
       event_git_sha: ${{ env.event_git_sha }}
     steps:
+      - name: Awknowledge
+          uses: actions/github-script@v2
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            script: |
+              github.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: 'We've got this covered!'
+              })
       - name: Test echo
         run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
       # Get the repo code
@@ -119,14 +130,13 @@ jobs:
       - name: Update Pipeline Definition with Pinned Containers
         working-directory: scribner/pipeline
         env:
-          PINNED_CONTAINER_PATH: ${{ env.ACR_REGISTRY }}.azurecr.io/${{ env.ACR_REPOSITORY }}/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
+          PINNED_AVERAGE_CONTAINER_PATH: ${{ env.ACR_REGISTRY }}.azurecr.io/${{ env.ACR_REPOSITORY }}/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
         # Do this?  Or make input args for all containers in the pipeline and pass that way?
         # Tee for debugging so I know what the result looks like
         # Do a global parameter expansion of the container path because it has slashes that need escaping for sed
         run: |
-          echo PINNED_CONTAINER_PATH is ${PINNED_CONTAINER_PATH}
-          sed -iE 's/^AVERAGE_OP_CONTAINER = .*$/AVERAGE_OP_CONTAINER = "'${PINNED_CONTAINER_PATH//\//\\/}'"/' build_pipeline_average.py
-          cat build_pipeline_average.py
+          echo PINNED_AVERAGE_CONTAINER_PATH is ${PINNED_AVERAGE_CONTAINER_PATH}
+          sed -iE 's/^AVERAGE_OP_CONTAINER = .*$/AVERAGE_OP_CONTAINER = "'${PINNED_AVERAGE_CONTAINER_PATH//\//\\/}'"/' build_pipeline_average.py
 
 #      # Look at the workspace interactively
 #      - name: Setup tmate session
@@ -173,24 +183,42 @@ jobs:
 
 
       - name: Run Pipeline ID
+        id: run-pipeline
         working-directory: scribner/pipeline
 #        env:
 #          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
         # Commented out of run command below:
         #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
         #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
+        # Capture run link so we can reuse it.  This relies on the python script writing it out
         run: |
-          echo ::set-env name=PL_ARGS::\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\'
-
-          pwd
-          echo `pwd`
-          echo $PL_ARGS
           cat pl_args.json
-          python run_pipeline_average.py --kfp_host ${{ secrets.KFP_HOST }} \
+          run_link=`python run_pipeline_average.py --kfp_host ${{ secrets.KFP_HOST }} \
                                          --pipeline_id $PUBLISHED_PIPELINE_ID \
                                          --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
                                          --tenant ${{ secrets.tenant }} \
                                          --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
                                          --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                                          --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                                         --pl_args `cat pl_args.json`
+                                         --pl_args `cat pl_args.json` \
+                    grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
+          echo ::set-env name=run_link::echo $run_link
+        outputs:
+          run_link: ${{ env.run_link }}
+
+      - name: Comment back Pipeline Run Link
+        uses: actions/github-script@v2
+        id: comment-pipeline-run-link
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Run link is: {{ $steps.run-pipeline.outputs.run_link }}'
+            })
+
+
+
+
