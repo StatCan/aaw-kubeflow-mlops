@@ -129,8 +129,6 @@ jobs:
 
 #      # Look at the workspace interactively
 #      - name: Setup tmate session
-#        env:
-#          PINNED_CONTAINER_PATH: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
 #        uses: mxschmitt/action-tmate@v2
 
       - name: Build pipeline
