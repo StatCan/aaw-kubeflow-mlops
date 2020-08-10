@@ -195,11 +195,12 @@ jobs:
 #        env:
 #          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
         # Commented out of run command below:
+#                                  pl_args=`cat pl_args.json`
         #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
         #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
+#                                                 --pl_args $pl_args \
         # Capture run link so we can reuse it.  This relies on the python script writing it out
         run: |
-          pl_args=`cat pl_args.json`
           run_link=`python run_pipeline_average.py --kfp_host ${{ secrets.KFP_HOST }} \
                                          --pipeline_id $PUBLISHED_PIPELINE_ID \
                                          --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
@@ -207,7 +208,6 @@ jobs:
                                          --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
                                          --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                                          --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                                         --pl_args $pl_args \
                     | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
           echo ::set-env name=RUN_LINK::echo $run_link
 

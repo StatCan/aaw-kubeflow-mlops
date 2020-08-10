@@ -107,7 +107,10 @@ def main():
     # pipeline_params["resource_group"] = args.resource_group
     # pipeline_params["workspace"] = args.workspace
     # pipeline_params["token"] = token
-    pipeline_params = {k.lower(): v for k, v in json.loads(args.pl_args).items()}
+
+    # Hard coded params to make other testing easier
+    # pipeline_params = {k.lower(): v for k, v in json.loads(args.pl_args).items()}
+    pipeline_params = {"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}
     print(f"pipeline_params = {pipeline_params}")
 
     client.run_pipeline(exp.id,
