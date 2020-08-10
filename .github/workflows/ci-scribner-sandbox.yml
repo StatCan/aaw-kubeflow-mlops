@@ -192,26 +192,24 @@ jobs:
       - name: Run Pipeline ID
         id: run-pipeline
         working-directory: scribner/pipeline
-#        env:
-#          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
+        #        env:
+        #          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
         # Commented out of run command below:
-#                                  pl_args=`cat pl_args.json`
+        #                                  pl_args=`cat pl_args.json`
         #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
         #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
-#                                                 --pl_args $pl_args \
+        #                                                 --pl_args $pl_args \
         # Capture run link so we can reuse it.  This relies on the python script writing it out
-#        | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
-
+        #        | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
         run: |
-          run_link=`python run_pipeline_average.py --kfp_host ${{ secrets.KFP_HOST }} \
-                                         --pipeline_id $PUBLISHED_PIPELINE_ID \
-                                         --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
-                                         --tenant ${{ secrets.tenant }} \
-                                         --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
-                                         --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
-                                         --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                          `
-          echo ::set-env name=RUN_LINK::$run_link
+          echo ::set-env name=RUN_LINK::$(python run_pipeline_average.py \
+                                            --kfp_host ${{ secrets.KFP_HOST }} \
+                                            --pipeline_id $PUBLISHED_PIPELINE_ID \
+                                            --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
+                                            --tenant ${{ secrets.tenant }} \
+                                            --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+                                            --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+                                            --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} )
 
       - uses: unsplash/comment-on-pr@master
         name: Comment with Run Link
@@ -220,6 +218,40 @@ jobs:
         with:
           msg: 'Run link: <a href="${{ env.RUN_LINK }}">here</a>'
           check_for_duplicate_msg: false  # OPTIONAL
+
+      - name: Run Pipeline ID 2
+        id: run-pipeline
+        working-directory: scribner/pipeline
+        #        env:
+        #          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
+        # Commented out of run command below:
+        #                                  pl_args=`cat pl_args.json`
+        #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
+        #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
+        #                                                 --pl_args $pl_args \
+        # Capture run link so we can reuse it.  This relies on the python script writing it out
+        #        | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
+        run: |
+          OUTPUT="$(python run_pipeline_average.py \
+                    --kfp_host ${{ secrets.KFP_HOST }} \
+                    --pipeline_id $PUBLISHED_PIPELINE_ID \
+                    --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
+                    --tenant ${{ secrets.tenant }} \
+                    --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+                    --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+                    --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} )"
+          echo ::set-env name=RUN_LINK::$(echo $OUTPUT | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/')
+
+      - uses: unsplash/comment-on-pr@master
+        name: Comment with Run Link 2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          msg: 'Run link: <a href="${{ env.RUN_LINK }}">here</a>'
+          check_for_duplicate_msg: false  # OPTIONAL
+
+
+
 
 
 
