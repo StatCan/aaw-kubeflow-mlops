@@ -94,7 +94,8 @@ def main():
     parser.add_argument(
         "--pl_args",
         type=str,
-        required=True,
+        required=False,
+        default='{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}',
         help="Arguments passed to pipeline.  Defined as a JSON string"
     )
 
@@ -109,8 +110,7 @@ def main():
     # pipeline_params["token"] = token
 
     # Hard coded params to make other testing easier
-    # pipeline_params = {k.lower(): v for k, v in json.loads(args.pl_args).items()}
-    pipeline_params = {"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}
+    pipeline_params = {k.lower(): v for k, v in json.loads(args.pl_args).items()}
     print(f"pipeline_params = {pipeline_params}")
 
     client.run_pipeline(exp.id,
