@@ -4,6 +4,7 @@ name: CI Scribner Pipeline
 #  - Push to scribner-sandbox (full cycle)
 #  - PR comment "/build-images" (code_quality_checks + build images)
 #  - PR comment "/build-pipeline" (code_quality_checks + build kfp pipeline)
+# Useless comment: for pretending things changed
 on:
   push:
     branches: [scribner-pipeline]
