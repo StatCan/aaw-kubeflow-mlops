@@ -26,16 +26,16 @@ jobs:
       event_git_sha: ${{ env.event_git_sha }}
     steps:
       - name: Awknowledge
-          uses: actions/github-script@v2
-          with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-            script: |
-              github.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: 'We've got this covered!'
-              })
+        uses: actions/github-script@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'We've got this covered!'
+            })
       - name: Test echo
         run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
       # Get the repo code
