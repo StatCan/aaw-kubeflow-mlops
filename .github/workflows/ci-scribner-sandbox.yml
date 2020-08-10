@@ -15,56 +15,55 @@ on:
 
 env:
   ACR_REGISTRY: "k8scc01covidmlopsacr"
-  ACR_REPOSITORY: "mlops"  # TODO: Can I change this?
+  ACR_REPOSITORY: "mlops"
 
 jobs:
-  code_quality_checks:
+  # Pull the git details
+  # TODO: Write this to an artifact (so we aren't checking out multiple times, possibly with different results)
+  prepare_git:
     runs-on: ubuntu-latest
+    # TODO: Remove all if statements here?
     if: contains(github.event.comment.body, '/scribner-build-images') || contains(github.event.comment.body, '/scribner-build-pipeline') || github.event_name != 'issue_comment'
     outputs:
-      event_sha: ${{ env.event_sha }}
+      event_ref: ${{ env.event_ref }}
       event_git_sha: ${{ env.event_git_sha }}
     steps:
-      - uses: unsplash/comment-on-pr@master
-        name: Awknowledge using action
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          msg: "Action has this covered!"
-          check_for_duplicate_msg: false  # OPTIONAL
-      - uses: actions/github-script@v2
-        name: Awknowledge using script
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: 'Script has this covered!'
-            })
-      - name: Test echo
-        run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
       # Get the repo code
       - uses: actions/checkout@v2
-      # If a issue_comment, figure out which PR we're talking about and make a event_sha context for others
-      # This needs revising.  An issue comment outside a PR will trigger this and run on master
-      - name: GetPRSHA
+        # If a issue_comment, figure out which PR we're talking about and make a event_ref context for others
+        # TODO: needs revising.  An issue comment outside a PR will trigger this and run on master
+      # Get the relevant sha, regardless of whether we have a comment or pr/push
+      - name: Get event ref if Comment
         if: github.event_name == 'issue_comment'
-        run: echo "::set-env name=event_sha::+refs/pull/${{ github.event.issue.number }}/merge"
-      - name: GetREFSHA
+        run: echo "::set-env name=event_ref::+refs/pull/${{ github.event.issue.number }}/merge"
+      - name: Get event ref if not Comment
         if: github.event_name != 'issue_comment'
-        run: echo "::set-env name=event_sha::${{ github.ref }}"
-#     Check out code and save the checked out git sha (if this is a comment, it wont be in github.sha)
+        run: echo "::set-env name=event_ref::${{ github.ref }}"
+      #     Check out relevant code
       - if: github.event_name == 'issue_comment'
         name: Checkout PR code
         run: |
-          git fetch origin ${{ env.event_sha }}
+          git fetch origin ${{ env.event_ref }}
           git checkout FETCH_HEAD
-        # Should I do this directly instead of via env?  It doesn't get used in here.
-      - name: Log git SHA for output
+      - name: Log event SHA for output
         run: echo ::set-env name=event_git_sha::$(git rev-parse HEAD)
+
+  code_quality_checks:
+    runs-on: ubuntu-latest
+    needs: prepare_git
+    if: contains(github.event.comment.body, '/scribner-build-images') || contains(github.event.comment.body, '/scribner-build-pipeline') || github.event_name != 'issue_comment'
+    steps:
+      # Get the repo code
+      - uses: actions/checkout@v2
+      #     Check out relevant code
+      - if: github.event_name == 'issue_comment'
+        name: Checkout PR code
+        run: |
+          git fetch origin ${{ needs.prepare_git.outputs.event_ref }}
+          git checkout FETCH_HEAD
 #       apply code checks - skipped for now
+      - name: Fake code quality checks
+        run: echo not real checks...
 #      - uses: TrueBrain/actions-flake8@master
 #        if: "true"
 #        with:
@@ -95,11 +94,11 @@ jobs:
           repository: ${{ env.ACR_REPOSITORY }}
           repository_crds: ${{ secrets.REPOSITORY_CRDS }}
           # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
-          # I had a case where code_quality_checks.outputs.event_sha wasn't available so it just passed a blank
+          # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
           # and the task didn't catch that as bad
-          branch: ${{ needs.code_quality_checks.outputs.event_sha }}
+          branch: ${{ needs.prepare_git.outputs.event_ref }}
           # Template tagged this with latest, but I think sha makes more sense?  Then do sed to inject in pipeline
-          tag: ${{ needs.code_quality_checks.outputs.event_git_sha }}  # This will default to commit sha anyway
+          tag: ${{ needs.prepare_git.outputs.event_git_sha }}  # This will default to commit sha anyway
           image: average
           folder: scribner/containers/average
 
@@ -116,7 +115,7 @@ jobs:
       - if: github.event_name == 'issue_comment'
         name: Checkout PR code
         run: |
-          git fetch origin ${{ needs.code_quality_checks.outputs.event_sha }}
+          git fetch origin ${{ needs.prepare_git.outputs.event_ref }}
           git checkout FETCH_HEAD
 
       - name: Set up Python 3.7
@@ -130,24 +129,16 @@ jobs:
         run: |
           pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
 
-#      # Look at the workspace interactively
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v2
-
       - name: Update Pipeline Definition with Pinned Containers
         working-directory: scribner/pipeline
         env:
-          PINNED_AVERAGE_CONTAINER_PATH: ${{ env.ACR_REGISTRY }}.azurecr.io/${{ env.ACR_REPOSITORY }}/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
+          PINNED_AVERAGE_CONTAINER_PATH: ${{ env.ACR_REGISTRY }}.azurecr.io/${{ env.ACR_REPOSITORY }}/average:${{ needs.prepare_git.outputs.event_git_sha }}
         # Do this?  Or make input args for all containers in the pipeline and pass that way?
         # Tee for debugging so I know what the result looks like
         # Do a global parameter expansion of the container path because it has slashes that need escaping for sed
         run: |
           echo PINNED_AVERAGE_CONTAINER_PATH is ${PINNED_AVERAGE_CONTAINER_PATH}
           sed -iE 's/^AVERAGE_OP_CONTAINER = .*$/AVERAGE_OP_CONTAINER = "'${PINNED_AVERAGE_CONTAINER_PATH//\//\\/}'"/' build_pipeline_average.py
-
-#      # Look at the workspace interactively
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v2
 
       - name: Build pipeline
         working-directory: scribner/pipeline
@@ -176,98 +167,15 @@ jobs:
           echo "pipeline id: $PIPELINE_ID"
           echo "::set-env name=PUBLISHED_PIPELINE_ID::$PIPELINE_ID"
 
-      # Hacky way to get a JSON string into the args below.  Couldn't get the escaping of quotes to work right from an
-      # environment variable
-      - uses: schdck/create-env-json@v2
-        id: create-env
-        with:
-          file-name: 'scribner/pipeline/pl_args.json'
-          a: 1
-          b: 2
-          c: 3
-          d: 10
-          e: 20
-
-
       - name: Run Pipeline ID
         id: run-pipeline
         working-directory: scribner/pipeline
-        #        env:
-        #          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
         # Commented out of run command below:
         #                                  pl_args=`cat pl_args.json`
         #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
         #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
         #                                                 --pl_args $pl_args \
-        # Capture run link so we can reuse it.  This relies on the python script writing it out
-        #        | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
-        run: |
-          echo ::set-env name=RUN_LINK::$(python run_pipeline_average.py \
-                                            --kfp_host ${{ secrets.KFP_HOST }} \
-                                            --pipeline_id $PUBLISHED_PIPELINE_ID \
-                                            --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
-                                            --tenant ${{ secrets.tenant }} \
-                                            --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
-                                            --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
-                                            --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                                          | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/' \
-          )
-
-      - uses: unsplash/comment-on-pr@master
-        name: Comment with Run Link
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          msg: 'Run link: <a href="${{ env.RUN_LINK }}">here</a>'
-          check_for_duplicate_msg: false  # OPTIONAL
-
-      - name: Run Pipeline ID 2
-        id: run-pipeline2
-        working-directory: scribner/pipeline
-        #        env:
-        #          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
-        # Commented out of run command below:
-        #                                  pl_args=`cat pl_args.json`
-        #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
-        #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
-        #                                                 --pl_args $pl_args \
-        # Capture run link so we can reuse it.  This relies on the python script writing it out
-        #        | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
-        # I should have just tee'd and piped to file then grepped/sed
-        run: |
-          OUTPUT="$(python run_pipeline_average.py \
-                    --kfp_host ${{ secrets.KFP_HOST }} \
-                    --pipeline_id $PUBLISHED_PIPELINE_ID \
-                    --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
-                    --tenant ${{ secrets.tenant }} \
-                    --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
-                    --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
-                    --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} )"
-          echo $OUTPUT
-          echo ::set-env name=RUN_LINK2::$(echo $OUTPUT | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/')
-
-      - uses: unsplash/comment-on-pr@master
-        name: Comment with Run Link 2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          msg: 'Run link: <a href="${{ env.RUN_LINK2 }}">here</a>'
-          check_for_duplicate_msg: false  # OPTIONAL
-
-
-      - name: Run Pipeline ID 3
-        id: run-pipeline3
-        working-directory: scribner/pipeline
-        #        env:
-        #          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
-        # Commented out of run command below:
-        #                                  pl_args=`cat pl_args.json`
-        #                                         --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
-        #                                         --workspace ${{ secrets.AML_WORKSPACE }} \
-        #                                                 --pl_args $pl_args \
-        # Capture run link so we can reuse it.  This relies on the python script writing it out
-        #        | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/'`
-        # I should have just tee'd and piped to file then grepped/sed
+        # Capture run link so we can post it as a comment
         run: |
           python run_pipeline_average.py \
                     --kfp_host ${{ secrets.KFP_HOST }} \
@@ -280,9 +188,8 @@ jobs:
           echo ::set-env name=RUN_LINK3::$(grep "Run link" output.txt | sed -E 's/^Run link: (.*)$/\1/')
 
       - uses: unsplash/comment-on-pr@master
-        name: Comment with Run Link 3
+        name: Comment with Run Link
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          msg: 'Run link: <a href="${{ env.RUN_LINK3 }}">here</a>'
-          check_for_duplicate_msg: false  # OPTIONAL
+          msg: 'Run link: <a href="${{ env.RUN_LINK }}">here</a>'
