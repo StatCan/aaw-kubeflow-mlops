@@ -220,7 +220,7 @@ jobs:
           check_for_duplicate_msg: false  # OPTIONAL
 
       - name: Run Pipeline ID 2
-        id: run-pipeline
+        id: run-pipeline2
         working-directory: scribner/pipeline
         #        env:
         #          PL_ARGS: $'\'{"a": 1, "b": 2, "c": 3, "d": 10, "e": 20}\''
