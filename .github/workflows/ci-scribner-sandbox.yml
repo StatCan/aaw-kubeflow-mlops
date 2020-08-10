@@ -118,7 +118,7 @@ jobs:
       - name: Update Pipeline Definition with Pinned Containers
         working-directory: scribner/pipeline
         env:
-          PINNED_CONTAINER_PATH: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
+          PINNED_CONTAINER_PATH: ${{ env.ACR_REGISTRY }}.azurecr.io/${{ env.ACR_REPOSITORY }}/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
         # Do this?  Or make input args for all containers in the pipeline and pass that way?
         # Tee for debugging so I know what the result looks like
         # Do a global parameter expansion of the container path because it has slashes that need escaping for sed
@@ -129,8 +129,6 @@ jobs:
 
 #      # Look at the workspace interactively
 #      - name: Setup tmate session
-#        env:
-#          PINNED_CONTAINER_PATH: k8scc01covidmlopsacr.azurecr.io/mlops/average:${{ needs.code_quality_checks.outputs.event_git_sha }}
 #        uses: mxschmitt/action-tmate@v2
 
       - name: Build pipeline
