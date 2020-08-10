@@ -25,17 +25,13 @@ jobs:
       event_sha: ${{ env.event_sha }}
       event_git_sha: ${{ env.event_git_sha }}
     steps:
-      - uses: actions/github-script@v2
+      - uses: unsplash/comment-on-pr@master
         name: Awknowledge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: 'We have this covered!'
-            })
+          msg: "We have this covered!"
+          check_for_duplicate_msg: false  # OPTIONAL
       - name: Test echo
         run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
       # Get the repo code
