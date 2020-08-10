@@ -25,8 +25,8 @@ jobs:
       event_sha: ${{ env.event_sha }}
       event_git_sha: ${{ env.event_git_sha }}
     steps:
-      - name: Awknowledge
-        uses: actions/github-script@v2
+      - uses: actions/github-script@v2
+        name: Awknowledge
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -34,7 +34,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'We've got this covered!'
+              body: 'We have this covered!'
             })
       - name: Test echo
         run: echo "Triggered for ${{ github.event_name }} with issue number ${{ github.event.issue.number }}"
