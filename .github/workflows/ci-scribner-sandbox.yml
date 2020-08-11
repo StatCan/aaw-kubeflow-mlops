@@ -8,11 +8,10 @@ name: CI Scribner Pipeline
 on:
   push:
     branches: [scribner-pipeline]
-    # DEBUG temp disable
-#  pull_request:
-#    branches: [scribner-pipeline]
-#  issue_comment:
-#    types: [created]  # Handles /triggers
+  pull_request:
+    branches: [scribner-pipeline]
+  issue_comment:
+    types: [created]  # Handles /triggers
 
 env:
   ACR_REGISTRY: "k8scc01covidmlopsacr"
@@ -58,12 +57,10 @@ jobs:
     steps:
       # Get the repo code
       - uses: actions/checkout@v2
-      #     Check out relevant code
-      - if: github.event_name == 'issue_comment'
-        name: Checkout PR code
-        run: |
-          git fetch origin ${{ needs.prepare_git.outputs.event_ref }}
-          git checkout FETCH_HEAD
+      # Get the specific repo code we decided to use above
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.prepare_git.outputs.event_git_sha }}
       # For a push, fail on violations.  This means it'll only show as "failed" in the CI when it is pushed, but notes
       # will always show in the action log.
       # But we could achieve the same thing by just making nothing depend on code_quality_checks.  Then build etc will
@@ -87,14 +84,10 @@ jobs:
     needs: prepare_git
     if: contains(github.event.comment.body, '/scribner-build-images') || contains(github.event.comment.body, '/scribner-build-pipeline') || github.event_name != 'issue_comment'
     steps:
-      # Get the repo code
+      # Get the specific repo code we decided to use above
       - uses: actions/checkout@v2
-      #     Check out relevant code
-      - if: github.event_name == 'issue_comment'
-        name: Checkout PR code
-        run: |
-          git fetch origin ${{ needs.prepare_git.outputs.event_ref }}
-          git checkout FETCH_HEAD
+        with:
+          ref: ${{ needs.prepare_git.outputs.event_git_sha }}
       - name: wekame-python-styleguide
         uses: wemake-services/wemake-python-styleguide@0.14.1
         with:
@@ -150,13 +143,10 @@ jobs:
     #    if: github.event_name == 'push' || github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline')
     if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline'))
     steps:
+      # Get the specific repo code we decided to use above
       - uses: actions/checkout@v2
-      #      Why do I need this both above and below checkout?
-      - if: github.event_name == 'issue_comment'
-        name: Checkout PR code
-        run: |
-          git fetch origin ${{ needs.prepare_git.outputs.event_ref }}
-          git checkout FETCH_HEAD
+        with:
+          ref: ${{ needs.prepare_git.outputs.event_git_sha }}
 
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
