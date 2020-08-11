@@ -154,9 +154,6 @@ jobs:
           tag: ${{ needs.prepare_git.outputs.event_git_sha }}  # This will default to commit sha anyway
           image: average
           folder: scribner/containers/average
-        # Needed for the pipeline dispatch events to communicate back to here.  Could also be a command line variable
-        env:
-          PR_NUM: ${{ github.event.issue.number }}
 
   build_kfp_pipeline_average:
     runs-on: ubuntu-latest
@@ -196,8 +193,11 @@ jobs:
         working-directory: scribner/pipeline
         run: python build_pipeline_average.py
         # Can use later to pass payloads back to issue showing status
+        # Needed for the pipeline dispatch events to communicate back to here.  Could also be a command line variable
         env:
-          PR_NUM: ${{ github.event.issue.number }}
+          #          PR_NUM: ${{ github.event.issue.number }}
+          PR_NUM: ${{ needs.prepare_git.outputs.pr_number }}
+
 
       - name: Publish/Upload KF Pipeline
         working-directory: scribner/pipeline
