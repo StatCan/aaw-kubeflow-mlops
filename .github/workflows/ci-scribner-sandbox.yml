@@ -215,7 +215,7 @@ jobs:
                     --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
                     --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                     --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} | tee output.txt
-          echo ::set-env name=RUN_LINK3::$(grep "Run link" output.txt | sed -E 's/^Run link: (.*)$/\1/')
+          echo ::set-env name=RUN_LINK::$(grep "Run link" output.txt | sed -E 's/^Run link: (.*)$/\1/')
 
       - uses: unsplash/comment-on-pr@v1.2.0
         name: Comment with Run Link
