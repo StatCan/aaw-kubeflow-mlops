@@ -75,7 +75,7 @@ jobs:
 
   build_images:
     runs-on: ubuntu-latest
-    needs: code_quality_checks
+    needs: [prepare_git, code_quality_checks]
     # All sub steps use a similar if statement.  I think this pattern is so you could have /build-specific-image?
     # Temp change to events for debugging
     #    if: github.event_name == 'push' || github.event_name == 'issue_comment'
@@ -85,6 +85,9 @@ jobs:
 #        if: ... <--This existed in template but it was same as above.  Whats up with that?
 #                   Think its so you could have /build-specific-image
         # Would be nice if this task returned output of the path to the built image in acr.  Do PR for that in action?
+        # Can I add input validation to acr task?  I was calling from a needs.* that I hadn't added to this job and
+        # got a non-descript error - i think it happened because the needs.* that wasn't available just shows as "" to
+        # the action?
         uses: statcan/actions/acr-task@master  # Pin to version?
         with:
           service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
@@ -104,7 +107,7 @@ jobs:
 
   build_kfp_pipeline_average:
     runs-on: ubuntu-latest
-    needs: [code_quality_checks, build_images]
+    needs: [prepare_git, code_quality_checks, build_images]
     # DEBUG: Currently firing on PRs as well just for ease of testing
 #    if: github.event_name == 'push' || github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline')
     if: github.event_name == 'pull_request' || github.event_name == 'push' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/scribner-build-pipeline'))
