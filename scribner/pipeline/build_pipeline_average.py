@@ -60,7 +60,7 @@ def my_pipeline(a, b, c, d, e):
 
     callback_url = 'kubemlopsbot-svc.kubeflow.svc.cluster.local:8080'
     exit_op = dsl.ContainerOp(
-        name='Exit Handler',
+        name='Report exit to github',
         image="curlimages/curl",
         command=['curl'],
         arguments=[
@@ -70,20 +70,22 @@ def my_pipeline(a, b, c, d, e):
     )
 
     with dsl.ExitHandler(exit_op):
+
         # Building this out here just so I can easily print it)
         args = ['-d',
                 get_callback_payload(TRAIN_START_EVENT),
                 callback_url]
         print(args)
-        start_callback = \
-            dsl.UserContainer('callback',
-                              'curlimages/curl',
-                              command=['curl'],
-                              args=args)
+        start_op = dsl.ContainerOp(
+            name="Report start to github",
+            image="curlimages/curl",
+            command=['curl'],
+            arguments=args
+        )
 
         # Compute averages for two groups
-        avg_1 = average_op(a, b, c)
-        avg_2 = average_op(d, e)
+        avg_1 = average_op(a, b, c).after(start_op)
+        avg_2 = average_op(d, e).after(start_op)
 
         # Use the results from _1 and _2 to compute an overall average
         average_result_overall = average_op(avg_1.output, avg_2.output)

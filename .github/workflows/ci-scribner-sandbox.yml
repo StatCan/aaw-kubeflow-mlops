@@ -49,8 +49,10 @@ jobs:
       - name: Log event SHA for output
         run: echo ::set-env name=event_git_sha::$(git rev-parse HEAD)
       - name: Get PR Number
-        run: echo ::set-env name=pr_number::$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
-
+        # from https://github.com/actions/checkout/issues/58#issuecomment-614041550
+#        run: echo ::set-env name=pr_number::$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
+        # Works if we've already done actions/checkout
+        run: echo ::set-env name=pr_number::${{github.event.issue.number}}
   test_write_comment_by_curl:
     runs-on: ubuntu-latest
     needs: prepare_git
