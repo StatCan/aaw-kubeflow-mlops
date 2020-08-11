@@ -23,11 +23,14 @@ jobs:
     steps:
       - name: comment by curl
         run: |
+          echo $REPO
+          echo $PR_NUM
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                -X POST -d '{"body": "Automated message via curl"}' \
-               "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments"
+               "https://api.github.com/repos/${REPO}/issues/${PR_NUM}/comments"
         env:
           PR_NUM: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
 
   # Pull the git details
   # TODO: Write this to an artifact (so we aren't checking out multiple times, possibly with different results)
@@ -146,6 +149,9 @@ jobs:
           tag: ${{ needs.prepare_git.outputs.event_git_sha }}  # This will default to commit sha anyway
           image: average
           folder: scribner/containers/average
+        # Needed for the pipeline dispatch events to communicate back to here.  Could also be a command line variable
+        env:
+          PR_NUM: ${{ github.event.issue.number }}
 
   build_kfp_pipeline_average:
     runs-on: ubuntu-latest
