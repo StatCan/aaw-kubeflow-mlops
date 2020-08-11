@@ -1,4 +1,4 @@
-name: CI Scribner Pipeline
+name: Scribner test git as artifact
 # The pipeline is triggered on:
 #  - PR to scribner-sandbox (code_quality_checks only)
 #  - Push to scribner-sandbox (full cycle)
