@@ -70,12 +70,16 @@ def my_pipeline(a, b, c, d, e):
     )
 
     with dsl.ExitHandler(exit_op):
+        # Building this out here just so I can easily print it)
+        args = ['-d',
+                get_callback_payload(TRAIN_START_EVENT),
+                callback_url]
+        print(args)
         start_callback = \
             dsl.UserContainer('callback',
                               'curlimages/curl',
                               command=['curl'],
-                              args=['-d',
-                                    get_callback_payload(TRAIN_START_EVENT), callback_url])  # noqa: E501
+                              args=args)
 
         # Compute averages for two groups
         avg_1 = average_op(a, b, c)
