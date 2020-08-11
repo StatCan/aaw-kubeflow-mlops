@@ -8,10 +8,11 @@ name: CI Scribner Pipeline
 on:
   push:
     branches: [scribner-pipeline]
-  pull_request:
-    branches: [scribner-pipeline]
-  issue_comment:
-    types: [created]  # Handles /triggers
+    # DEBUG temp disable
+#  pull_request:
+#    branches: [scribner-pipeline]
+#  issue_comment:
+#    types: [created]  # Handles /triggers
 
 env:
   ACR_REGISTRY: "k8scc01covidmlopsacr"

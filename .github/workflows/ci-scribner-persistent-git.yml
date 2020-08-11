@@ -34,6 +34,8 @@ jobs:
         # If a issue_comment, figure out which PR we're talking about and make a event_ref context for others
         # TODO: needs revising.  An issue comment outside a PR will trigger this and run on master
       # Get the relevant sha, regardless of whether we have a comment or pr/push
+      - name: Display structure of files
+        run: ls -R
       - name: Archive repository
         uses: actions/upload-artifact@v2
         with:
