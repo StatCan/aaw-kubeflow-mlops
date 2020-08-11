@@ -52,6 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: prepare_git
     if: contains(github.event.comment.body, '/scribner-build-images') || contains(github.event.comment.body, '/scribner-build-pipeline') || github.event_name != 'issue_comment'
+    env:
+      ONLY_WARN: true
     steps:
       # Get the repo code
       - uses: actions/checkout@v2
@@ -61,6 +63,10 @@ jobs:
         run: |
           git fetch origin ${{ needs.prepare_git.outputs.event_ref }}
           git checkout FETCH_HEAD
+      # For a push, fail on violations
+      - if: github.event_name == 'push'
+        name: Flag to fail on push
+        run: echo '::set-env name=ONLY_WARN::true'
         # Should we make this comment with a warning for a PR/trigger, but fail for a push?  Try the only_warn setting
         # to see what it does.  Could have a first env-var setting step that sets the value of only_warn, then these
         # could use that value?
@@ -68,10 +74,12 @@ jobs:
         if: "true"
         with:
           path: "scribner/pipeline"
+          only_warn: ${{ env.ONLY_WARN }}
       - uses: TrueBrain/actions-flake8@master
         if: "true"
         with:
           path: "scribner/containers"
+          only_warn: ${{ env.ONLY_WARN }}
 
   code_quality_checks_wemake_pr_review:
     runs-on: ubuntu-latest

@@ -1,11 +1,9 @@
 import json
-
+import sys
 import kfp
 import argparse
 
-# DEBUG: Temp hack while I'm working in a separate directory but still need utils
-import sys
-
+# DEBUG: Temp hack while working in a separate directory but still need utils
 sys.path.append("../../pipeline")
 from utils.auth.azure import get_access_token
 
@@ -105,13 +103,13 @@ def main():
     client = kfp.Client(host=args.kfp_host, existing_token=token)
     exp = client.get_experiment(experiment_name=args.experiment_name)  # noqa: E501
 
-    pipeline_params = {}
     # pipeline_params["resource_group"] = args.resource_group
     # pipeline_params["workspace"] = args.workspace
     # pipeline_params["token"] = token
 
     # Hard coded params to make other testing easier
-    pipeline_params = {k.lower(): v for k, v in json.loads(args.pl_args).items()}
+    pipeline_params = {k.lower(): v
+                       for k, v in json.loads(args.pl_args).items()}
     # print(f"pipeline_params = {pipeline_params}")
 
     run = client.run_pipeline(exp.id,
@@ -119,7 +117,7 @@ def main():
                               params=pipeline_params,
                               pipeline_id=args.pipeline_id)
 
-    run_link = "Run link: https://kubeflow.covid.cloud.statcan.ca/pipeline/#/runs/details/{run_id}"
+    run_link = "Run link: https://kubeflow.covid.cloud.statcan.ca/pipeline/#/runs/details/{run_id}"  # noqa: E501
     print(run_link.format(run_id=run.id))
 
 

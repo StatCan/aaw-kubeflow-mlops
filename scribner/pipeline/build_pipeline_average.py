@@ -1,9 +1,6 @@
-# Based on https://github.com/StatCan/jupyter-notebooks/blob/master/kfp-basics/average_with_docker_components.ipynb
-
-import kfp
+# Based on https://github.com/StatCan/jupyter-notebooks/blob/master/kfp-basics/average_with_docker_components.ipynb  # noqa: E501
 from kfp import dsl
 from kfp import compiler
-import time
 
 
 AVERAGE_OP_CONTAINER = "k8scc01covidacr.azurecr.io/kfp-components/average:v1"
@@ -12,23 +9,24 @@ AVERAGE_OP_CONTAINER = "k8scc01covidacr.azurecr.io/kfp-components/average:v1"
 def average_op(*numbers):
     """
     Factory for average ContainerOps
-    
-    Accepts an arbitrary number of input numbers, returning a ContainerOp that passes those
-    numbers to the underlying docker image for averaging
-    
-    Returns output collected from ./out.txt from inside the container
 
+    Accepts an arbitrary number of input numbers, returning a ContainerOp that
+    passes those numbers to the underlying docker image for averaging
+
+    Returns output collected from ./out.txt from inside the container
     """
     # Input validation
     if len(numbers) < 1:
-        raise ValueError("Must specify at least one number to take the average of")
+        raise ValueError("Must specify at least one number to take the average"
+                         " of")
         
     return dsl.ContainerOp(
         name="average",  # What will show up on the pipeline viewer
         image=AVERAGE_OP_CONTAINER,  # The image that KFP runs to do the work
-        arguments=numbers,  # Passes each number as a separate (string) command line argument
-        # Script inside container writes the result (as a string) to out.txt, which 
-        # KFP reads for us and brings back here as a string
+        arguments=numbers,  # Passes each number as a separate (string) command
+                            # line argument
+        # Script inside container writes the result (as a string) to out.txt,
+        # which KFP reads for us and brings back here as a string
         file_outputs={'data': './out.txt'},  
     )
 
@@ -38,7 +36,7 @@ def average_op(*numbers):
 )
 def my_pipeline(a, b, c, d, e):
     """
-    Averaging pipeline which accepts five numbers and does some averaging operations on them
+    Averaging pipeline which accepts five numbers and does things
     """
     # Compute averages for two groups
     avg_1 = average_op(a, b, c)
@@ -75,7 +73,10 @@ if __name__ == "__main__":
 #
 # run = client.run_pipeline(
 #     exp.id,  # Run inside the above experiment
-#     experiment_name + '-' + time.strftime("%Y%m%d-%H%M%S"),  # Give our job a name with a timestamp so its unique
-#     pipeline_yaml,  # Pass the .yaml.zip we created above.  This defines the pipeline
-#     params=pl_params  # Pass our parameters we want to run the pipeline with
+# Give our job a name with a timestamp so its unique
+#     experiment_name + '-' + time.strftime("%Y%m%d-%H%M%S"),
+# Pass the .yaml.zip we created above.  This defines the pipeline
+#     pipeline_yaml,
+# Pass our parameters we want to run the pipeline with
+#     params=pl_params
 # )
