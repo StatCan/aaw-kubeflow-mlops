@@ -63,13 +63,13 @@ jobs:
         run: |
           git fetch origin ${{ needs.prepare_git.outputs.event_ref }}
           git checkout FETCH_HEAD
-      # For a push, fail on violations
+      # For a push, fail on violations.  This means it'll only show as "failed" in the CI when it is pushed, but notes
+      # will always show in the action log.
+      # But we could achieve the same thing by just making nothing depend on code_quality_checks.  Then build etc will
+      # still run, but CI would still show failure.  Does a push get rejected by a CI failure or does it happen anyway?
       - if: github.event_name == 'push'
         name: Flag to fail on push
         run: echo '::set-env name=ONLY_WARN::true'
-        # Should we make this comment with a warning for a PR/trigger, but fail for a push?  Try the only_warn setting
-        # to see what it does.  Could have a first env-var setting step that sets the value of only_warn, then these
-        # could use that value?
       - uses: TrueBrain/actions-flake8@master
         if: "true"
         with:
