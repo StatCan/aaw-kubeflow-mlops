@@ -84,7 +84,7 @@ jobs:
       - name: Build Average Image
 #        if: ... <--This existed in template but it was same as above.  Whats up with that?
 #                   Think its so you could have /build-specific-image
-        # Would be nice if this task returned output of the path to the built image in acr.  Do PR for that?
+        # Would be nice if this task returned output of the path to the built image in acr.  Do PR for that in action?
         uses: statcan/actions/acr-task@master  # Pin to version?
         with:
           service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
