@@ -70,4 +70,4 @@ jobs:
           git fetch origin ${{ needs.prepare_git.outputs.event_ref }}
           git checkout FETCH_HEAD
       - name: Display structure of downloaded files again
-          run: ls -R
+        run: ls -R
