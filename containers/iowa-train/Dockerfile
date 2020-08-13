@@ -11,7 +11,7 @@ COPY train.ipynb /scripts/train.ipynb
 # For local test, mount data as a volume
 # docker run -v path/to/local/data_train.csv:/data_train.csv tag
 ENTRYPOINT [ "papermill", "/scripts/train.ipynb" ]
-CMD ["train_complete.ipynb", \
+CMD ["complete.ipynb", \
 	 "-p",  "data",  "data_train.csv", \
 	 "-p",  "output_model",  "model.joblib", \
 	 "-p",  "svm_gamma",  "0.1", \
