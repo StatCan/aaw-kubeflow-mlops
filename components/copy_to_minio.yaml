@@ -22,6 +22,6 @@ implementation:
     - {inputValue: Minio URL}
     - {inputValue: Minio access key}
     - {inputValue: Minio secret key}
-    - {inputPath: Local file}
+    - {inputPath: Local source}
     - {inputValue: Minio destination}
     - {outputPath: Minio destination}
