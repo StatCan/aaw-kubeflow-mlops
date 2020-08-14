@@ -6,3 +6,6 @@ plan
 terraform.tfvars
 __pycache__
 *.py.tar.gz
+
+# Jupyter Notebook
+.ipynb_checkpoints
