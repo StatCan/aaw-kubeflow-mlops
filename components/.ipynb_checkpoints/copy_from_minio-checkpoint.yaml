@@ -1,0 +1,27 @@
+name: Copy from Minio
+inputs:
+- {name: Minio URL, type: URL, description: 'Minio instance URL, starting with http://'}
+- {name: Minio access key, type: String}
+- {name: Minio secret key, type: String}
+- {name: Minio source, type: String, description: 'Minio source location in format <bucket>/<location_in_bucket>'}
+- {name: Local destination, type: String, description: 'Local destination of download'}
+outputs: 
+- {name: Local destination, type: String}
+implementation:
+  container:
+    image: minio/mc
+    command:
+    - sh
+    - -ex
+    - -c
+    - |
+        mkdir -p "$(dirname "$5")"
+        mc config host add my_minio $0 $1 $2
+        mc cp my_minio/$3 $4
+        mv $4 $5
+    - {inputValue: Minio URL}
+    - {inputValue: Minio access key}
+    - {inputValue: Minio secret key}
+    - {inputValue: Minio source}
+    - {inputPath: Local destination}
+    - {outputPath: Local destination}
