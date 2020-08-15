@@ -1,0 +1,30 @@
+name: Train
+inputs:
+- {name: data_train, type: String}
+- {name: svm_gamma, type: Float}
+- {name: svm_c, type: Float}
+
+outputs:
+- {name: model}
+- {name: completed_notebook}
+
+# Use a fake image name for now.  This is a template component that we can reuse later
+# by loading it then doing a 
+# def use_image(image_name):
+#   def _use_image(task):
+#     task.image = image_name
+#     return task
+# instanced_op_task.apply(use_image(my_image_name))
+#
+# Could we just leave image out entirely?
+implementation:
+  container:
+    image: not.a.real.image/training:latest
+    command: [
+      'papermill', '/scripts/train.ipynb',
+      {outputPath: completed_notebook},
+      '-p', 'data', {inputValue: data_train},
+      '-p', 'output_model', {outputPath: model},
+      '-p', 'svm_gamma', {inputValue: svm_gamma},
+      '-p', 'svm_C', {inputValue: svm_c}
+    ]
