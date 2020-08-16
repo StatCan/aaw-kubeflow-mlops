@@ -19,7 +19,7 @@ outputs:
 # Could we just leave image out entirely?
 implementation:
   container:
-    image: not.a.real.image/training:latest
+    image: not.a.real.image/iowa-train:latest
     command: [
       'papermill', '/scripts/train.ipynb',
       {outputPath: completed_notebook},
