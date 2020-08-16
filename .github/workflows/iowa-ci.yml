@@ -73,7 +73,7 @@ jobs:
         run: |
            git fetch origin ${{ env.event_ref }}
            git checkout FETCH_HEAD
-      - name: Store event SHA to output
+      - name: Store event git SHA to output
         run: |
           git_sha="$(git rev-parse HEAD)"
           echo "Storing git SHA $git_sha to environment variable"
