@@ -83,45 +83,44 @@ jobs:
           echo "Saving PR number from github.event.issue.number (${{ github.event.issue.number }}) to environment variable"
           echo ::set-env name=pr_number::${{ github.event.issue.number }}
 
-    code_quality_checks:
-      runs-on: ubuntu-latest
-      if: github.event_name != 'issue_comment'
-      needs: [git_context]
-      steps:
-        - uses: actions/checkout@v2
-          with:
-            # I think this is equivalent to doing 
-            #   git fetch origin ${{ ...event_ref }}
-            #   git checkout FETCH_HEAD
-            ref: ${{ needs.git_context.outputs.event_ref }}
-        - uses: TrueBrain/actions-flake8@master
-          with:
-            path: "containers"
-        - uses: TrueBrain/actions-flake8@master
-          with:
-            path: "pipeline"
+  code_quality_checks:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'issue_comment'
+    needs: [git_context]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # I think this is equivalent to doing 
+          #   git fetch origin ${{ ...event_ref }}
+          #   git checkout FETCH_HEAD
+          ref: ${{ needs.git_context.outputs.event_ref }}
+      - uses: TrueBrain/actions-flake8@master
+        with:
+          path: "containers"
+      - uses: TrueBrain/actions-flake8@master
+        with:
+          path: "pipeline"
 
-    build_images:
-      runs-on: ubuntu-latest
-      # TODO DEBUG: Commented out if statement until this action is pushed to master
-      # if: github.event_name == 'push' || needs.issue_comment_context.outputs.is_pr_comment
-      needs: [git_context, issue_comment_context]
-      steps:
-        - name: Build Training Image
-          if: contains(github.event.comment.body, '/build-images')
-          uses: statcan/actions/acr-task@master
-          with:
-            service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
-            service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
-            tenant: ${{ secrets.TENANT }}
-            registry: ${{ env.ACR_REGISTRY }}
-            repository: ${{ env.ACR_REPOSITORY }}
-            repository_crds: ${{ secrets.REPOSITORY_CRDS }}
-            # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
-            # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
-            # and the task didn't catch that as bad
-            branch: ${{ needs.git_context.outputs.event_ref }}
-            tag: ${{ needs.git_context.outputs.event_git_sha }}
-            image: iowa-train
-            folder: containers/iowa-train
-
+  build_images:
+    runs-on: ubuntu-latest
+    # TODO DEBUG: Commented out if statement until this action is pushed to master
+    # if: github.event_name == 'push' || needs.issue_comment_context.outputs.is_pr_comment
+    needs: [git_context, issue_comment_context]
+    steps:
+      - name: Build Training Image
+        if: contains(github.event.comment.body, '/build-images')
+        uses: statcan/actions/acr-task@master
+        with:
+          service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
+          service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
+          tenant: ${{ secrets.TENANT }}
+          registry: ${{ env.ACR_REGISTRY }}
+          repository: ${{ env.ACR_REPOSITORY }}
+          repository_crds: ${{ secrets.REPOSITORY_CRDS }}
+          # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
+          # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
+          # and the task didn't catch that as bad
+          branch: ${{ needs.git_context.outputs.event_ref }}
+          tag: ${{ needs.git_context.outputs.event_git_sha }}
+          image: iowa-train
+          folder: containers/iowa-train
