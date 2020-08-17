@@ -1,0 +1,30 @@
+name: Score
+inputs:
+- {name: data, type: String}
+- {name: model, type: Float}
+
+outputs:
+- {name: completed_notebook}
+- {name: classification_report}
+- {name: f1}
+
+# Use a fake image name for now.  This is a template component that we can reuse later
+# by loading it then doing a 
+# def use_image(image_name):
+#   def _use_image(task):
+#     task.image = image_name
+#     return task
+# instanced_op_task.apply(use_image(my_image_name))
+#
+# Could we just leave image out entirely?
+implementation:
+  container:
+    image: not.a.real.image/iowa-train:latest
+    command: [
+      'bash', '/scripts/score.sh', '--notebook', '/scripts/score.ipynb',
+      '--output_notebook', {outputPath: completed_notebook},
+      '--data', {inputPath: data},
+      '--model', {inputPath: model},
+      '--output_classification_report_filename', {outputPath: classification_report},
+      '--output_f1_filename', {outputPath: f1}
+    ]
