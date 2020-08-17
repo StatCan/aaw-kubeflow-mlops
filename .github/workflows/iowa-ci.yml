@@ -108,7 +108,7 @@ jobs:
     needs: [git_context, issue_comment_context]
     steps:
       - name: Build Training Image
-        if: contains(github.event.comment.body, '/build-images')
+        if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
         uses: statcan/actions/acr-task@master
         with:
           service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
