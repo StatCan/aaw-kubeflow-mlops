@@ -226,7 +226,7 @@ jobs:
                                                     --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
                                                     --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                                                     --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                                                    --pipeline_file_path ${{ TRAINING_PIPELINE_FILE }} 2>&1 >/dev/null)
+                                                    --pipeline_file_path ${{ env.TRAINING_PIPELINE_FILE }} 2>&1 >/dev/null)
           echo "pipeline id: $PIPELINE_ID"
           echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
 
