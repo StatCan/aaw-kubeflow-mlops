@@ -198,7 +198,7 @@ jobs:
       - name: Install Python papermill
         working-directory: pipeline/iowa-train
         run: |
-          pip3 install --upgrade papermill ipython
+          pip3 install --upgrade papermill ipykernel
           ipython kernel install --user
 
       - name: Build Pipeline with Pinned Containers
