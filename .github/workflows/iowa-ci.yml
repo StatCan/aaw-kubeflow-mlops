@@ -131,4 +131,29 @@ jobs:
       - name: Echo Training Image Name
         run: |
           echo "Above step generated training image: ${{ steps.build_training_image.outputs.image_url }}"
-    # TODO: Figure out how to reuse the image_url later!
+      
+      - name: Build Scoring Image
+        id: build_scoring_image
+        # TODO DEBUG: Removed guard during testing
+        # if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
+        # DEBUG: Testing updated acr-task with image_url output
+        # uses: statcan/actions/acr-task@master
+        uses: ca-scribner/actions/acr-task@master
+        with:
+          service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
+          service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
+          tenant: ${{ secrets.TENANT }}
+          registry: ${{ env.ACR_REGISTRY }}
+          repository: ${{ env.ACR_REPOSITORY }}
+          repository_crds: ${{ secrets.REPOSITORY_CRDS }}
+          # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
+          # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
+          # and the task didn't catch that as bad
+          branch: ${{ needs.git_context.outputs.event_ref }}
+          tag: ${{ needs.git_context.outputs.event_git_sha }}
+          image: iowa-score
+          folder: containers/iowa-score
+      - name: Echo Training Image Name
+        run: |
+          echo "Above step generated image: ${{ steps.build_scoring_image.outputs.image_url }}" 
+   # TODO: Figure out how to reuse the image_url later!
