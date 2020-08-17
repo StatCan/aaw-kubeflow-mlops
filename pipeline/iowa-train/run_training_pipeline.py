@@ -114,7 +114,6 @@ def main():
 #     pipeline_params["resource_group"] = args.resource_group
 #     pipeline_params["workspace"] = args.workspace
 #     pipeline_params["token"] = token
-    pipeline_params['data_train']
     pipeline_params['data_train'] = args.data_train
     pipeline_params['data_test'] = args.data_test
     
