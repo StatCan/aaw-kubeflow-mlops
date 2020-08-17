@@ -205,7 +205,7 @@ jobs:
         working-directory: pipeline/iowa-train
         run: |
           papermill build_training_pipeline.ipynb completed.ipynb \
-                    -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }}
+                    -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }} \
                     -p svm_c 100. \
                     -p svm_gamma 0.1 \
                     -p container_tag ${{ needs.git_context.outputs.event_git_sha }}
