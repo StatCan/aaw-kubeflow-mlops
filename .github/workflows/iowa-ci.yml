@@ -123,4 +123,4 @@ jobs:
           branch: ${{ needs.git_context.outputs.event_ref }}
           tag: ${{ needs.git_context.outputs.event_git_sha }}
           image: iowa-train
-          folder: containers
+          folder: containers/iowa-train
