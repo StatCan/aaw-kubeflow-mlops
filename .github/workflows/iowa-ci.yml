@@ -160,7 +160,7 @@ jobs:
           tag: ${{ needs.git_context.outputs.event_git_sha }}
           image: iowa-score
           folder: containers/iowa-score
-      - name: Echo Training Image Name
+      - name: Echo Scoring Image Name
         run: |
           echo "Above step generated image: ${{ steps.build_scoring_image.outputs.image_url }}" 
 
@@ -198,7 +198,7 @@ jobs:
       - name: Install Python papermill
         working-directory: pipeline/iowa-train
         run: |
-          pip3 install --upgrade papermill
+          pip3 install --upgrade papermill ipython
           ipython kernel install --user
 
       - name: Build Pipeline with Pinned Containers
