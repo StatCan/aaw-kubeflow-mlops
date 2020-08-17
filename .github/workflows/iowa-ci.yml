@@ -127,7 +127,7 @@ jobs:
           tag: ${{ needs.git_context.outputs.event_git_sha }}
           image: iowa-train
           folder: containers/iowa-train
-    steps:
       - name: Echo Training Image Name
         run: |
           echo "Above step generated training image: ${{ steps.build_training_image.outputs.image_url }}"
+    # TODO: Figure out how to reuse the image_url later!
