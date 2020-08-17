@@ -50,17 +50,18 @@ jobs:
     if: github.event_name != 'issue_comment' || needs.issue_comment_context.outputs.is_pr_comment
     outputs:
       event_ref: ${{ env.event_ref }}
-      event_git_sha: ${{ env.event_git_sha }}
-      pr_number: ${{ env.pr_number }}
+      event_git_sha: ${{ steps.get_git_sha.outputs.event_git_sha }}
+      pr_number: ${{ steps.get_pr_number.outputs.pr_number }}
     steps:
       # todo: I think I can just checkout once below after context is determined?
       - uses: actions/checkout@v2
       - name: Get event ref if this is an issue_comment
+        id: get_event_ref
         if: github.event_name == 'issue_comment'
         run: |
           event_ref="+refs/pull/${{ github.event.issue.number }}/merge"
           echo "Writing $event_ref to environment variable"
-          echo "::set-env name=event_ref::$event_ref"
+          echo "::set-output name=event_ref::$event_ref"
       - name: Get event ref if this is not an issue_comment
         if: github.event_name != 'issue_comment'
         run: |
@@ -74,14 +75,16 @@ jobs:
            git fetch origin ${{ env.event_ref }}
            git checkout FETCH_HEAD
       - name: Store event git SHA to output
+        id: get_git_sha
         run: |
           git_sha="$(git rev-parse HEAD)"
           echo "Storing git SHA $git_sha to environment variable"
-          echo ::set-env name=event_git_sha::$git_sha
+          echo ::set-output name=event_git_sha::$git_sha
       - name: Get PR number via github event context
+        id: get_pr_number
         run: |
           echo "Saving PR number from github.event.issue.number (${{ github.event.issue.number }}) to environment variable"
-          echo ::set-env name=pr_number::${{ github.event.issue.number }}
+          echo ::set-output name=pr_number::${{ github.event.issue.number }}
 
   code_quality_checks:
     runs-on: ubuntu-latest
@@ -104,8 +107,12 @@ jobs:
   build_images:
     runs-on: ubuntu-latest
     # TODO DEBUG: Commented out if statement until this action is pushed to master
+    # TODO: add triggers for build-images
     # if: github.event_name == 'push' || needs.issue_comment_context.outputs.is_pr_comment
     needs: [git_context, issue_comment_context]
+    outputs:
+      training_image_url: ${{ steps.build_training_image.outputs.image_url }}
+      scoring_image_url: ${{ steps.build_training_image.outputs.image_url }}
     steps:
       - name: Build Training Image
         id: build_training_image
@@ -156,4 +163,87 @@ jobs:
       - name: Echo Training Image Name
         run: |
           echo "Above step generated image: ${{ steps.build_scoring_image.outputs.image_url }}" 
-   # TODO: Figure out how to reuse the image_url later!
+
+  build_kfp_pipeline:
+    runs-on: ubuntu-latest
+    # TODO DEBUG: Commented out if statement until this action is pushed to master
+    # TODO: Add triggers for build-pipeline
+    # if: github.event_name == 'push' || needs.issue_comment_context.outputs.is_pr_comment
+    needs: [git_context, issue_comment_context, build_images]
+    env:
+      TRAINING_PIPELINE_FILE: build_training_pipeline.tar.gz
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # I think this is equivalent to doing 
+          #   git fetch origin ${{ ...event_ref }}
+          #   git checkout FETCH_HEAD
+          ref: ${{ needs.git_context.outputs.event_ref }}
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      # Use dependencies from a pinned KFP implementation.  Needs to be updated if that gets updated,
+      # but pinning prevents this from changing without us realizing
+      - name: Install Python dependencies (kfp)
+        run: |
+          pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
+
+      # This gets touchy about nbconvert versions.  For now just hard coding this install.  
+      # Don't want to do a --upgrade -r requirements.txt because that will upgrade kfp also
+      # Maybe move above kfp dependency as pinned dependency into this requirements.txt
+
+      - name: Install Python papermill
+        working-directory: pipeline/iowa-train
+        run: |
+          pip3 install --upgrade papermill
+          ipython kernel install --user
+
+      - name: Build Pipeline with Pinned Containers
+        working-directory: pipeline/iowa-train
+        run: |
+          papermill build_training_pipeline.ipynb completed.ipynb \
+                    -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }}
+                    -p svm_c 100. \
+                    -p svm_gamma 0.1 \
+                    -p container_tag ${{ needs.git_context.outputs.event_git_sha }}
+
+      - name: Publish/Upload KF Pipeline
+        id: publish_train_pipeline
+        working-directory: pipeline/iowa-train
+        env:
+          # TODO: Better as a parameter?
+#          KFP_PIPELINE_NAME: ${{ secrets.KFP_PIPELINE_NAME }}
+          KFP_PIPELINE_NAME: iowa-train
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          export PIPELINE_ID=$(python ../publish.py --run_id $RUN_ID \
+                                                    --pipeline_name "$KFP_PIPELINE_NAME" \
+                                                    --kfp_host ${{ secrets.KFP_HOST }} \
+                                                    --tenant ${{ secrets.tenant }} \
+                                                    --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+                                                    --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+                                                    --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+                                                    --pipeline_file_path ${{ TRAINING_PIPELINE_FILE }} 2>&1 >/dev/null)
+          echo "pipeline id: $PIPELINE_ID"
+          echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
+
+      - name: Run Training Pipeline
+        working-directory: pipeline/iowa-train
+        # Removed while debugging:
+          # --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
+          # --workspace ${{ secrets.AML_WORKSPACE }} \
+        # TODO: Flexible dataset specs?  Or just define via pipeline?
+        run: |
+          python run_training_pipeline.py \
+            --kfp_host ${{ secrets.KFP_HOST }} \
+            --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
+            --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
+            --tenant ${{ secrets.tenant }} \
+            --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+            --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+            --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+            --data_train andrew-scribner/iowa/processed/train/2020-08-13_18:02:01_train.csv
+            --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv
