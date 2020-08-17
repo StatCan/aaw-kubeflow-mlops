@@ -109,7 +109,8 @@ jobs:
     steps:
       - name: Build Training Image
         id: build_training_image
-        if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
+        # TODO DEBUG: Removed guard during testing
+        # if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
         # DEBUG: Testing updated acr-task with image_url output
         # uses: statcan/actions/acr-task@master
         uses: ca-scribner/actions/acr-task@master
