@@ -231,13 +231,13 @@ jobs:
           echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
 
       - name: Run Training Pipeline
-        working-directory: pipeline
+        working-directory: pipeline/iowa-train
         # Removed while debugging:
           # --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
           # --workspace ${{ secrets.AML_WORKSPACE }} \
         # TODO: Flexible dataset specs?  Or just define via pipeline?
         run: |
-          python iowa-train/run_training_pipeline.py \
+          python run_training_pipeline.py \
             --kfp_host ${{ secrets.KFP_HOST }} \
             --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
             --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
