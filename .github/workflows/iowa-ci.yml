@@ -171,7 +171,7 @@ jobs:
     # if: github.event_name == 'push' || needs.issue_comment_context.outputs.is_pr_comment
     needs: [git_context, issue_comment_context, build_images]
     env:
-      - TRAINING_PIPELINE_FILE: build_training_pipeline.tar.gz
+      TRAINING_PIPELINE_FILE: build_training_pipeline.tar.gz
     steps:
       - uses: actions/checkout@v2
         with:
@@ -213,11 +213,11 @@ jobs:
       - name: Publish/Upload KF Pipeline
         id: publish_train_pipeline
         working-directory: pipeline/iowa-train
-        env:
-          # TODO: Better as a parameter?
+        # TODO: Better as a parameter?
 #          KFP_PIPELINE_NAME: ${{ secrets.KFP_PIPELINE_NAME }}
-          - KFP_PIPELINE_NAME: iowa-train
-          - RUN_ID: ${{ github.run_id }}
+        env:
+          KFP_PIPELINE_NAME: iowa-train
+          RUN_ID: ${{ github.run_id }}
         run: |
           export PIPELINE_ID=$(python ../publish.py --run_id $RUN_ID \
                                                     --pipeline_name "$KFP_PIPELINE_NAME" \
