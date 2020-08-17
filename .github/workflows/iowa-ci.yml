@@ -65,7 +65,7 @@ jobs:
         if: github.event_name != 'issue_comment'
         run: |
           echo "Writing ${{ github.ref }} to environment variable"
-          echo "::set-env name=event_ref::{{ github.ref }}"
+          echo "::set-env name=event_ref::${{ github.ref }}"
       # If we are acting for a comment on a PR, the comment's default checkout will be from master 
       # not from the PR's commit. Check out the PR's commit
       - name: Checkout PR code
@@ -123,4 +123,4 @@ jobs:
           branch: ${{ needs.git_context.outputs.event_ref }}
           tag: ${{ needs.git_context.outputs.event_git_sha }}
           image: iowa-train
-          folder: containers/iowa-train
+          folder: containers
