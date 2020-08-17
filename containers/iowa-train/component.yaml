@@ -21,10 +21,10 @@ implementation:
   container:
     image: not.a.real.image/iowa-train:latest
     command: [
-      'papermill', '/scripts/train.ipynb',
-      {outputPath: completed_notebook},
-      '-p', 'data', {inputValue: data_train},
-      '-p', 'output_model', {outputPath: model},
-      '-p', 'svm_gamma', {inputValue: svm_gamma},
-      '-p', 'svm_C', {inputValue: svm_c}
+      'bash', '/scripts/train.sh', '--notebook', '/scripts/train.ipynb',
+      '--output_notebook', {outputPath: completed_notebook},
+      '--data', {inputPath: data_train},
+      '--output_model', {outputPath: model},
+      '--svm_gamma', {inputValue: svm_gamma},
+      '--svm_c', {inputValue: svm_c}
     ]
