@@ -294,7 +294,7 @@ jobs:
       - name: Get run link
         id: get_run_link
         run: |
-          echo ::set-output name=run_link::"${{ env.KUBEFLOW_PORTAL }}/pipeline/#/runs/details/${{ steps.run_training_pipeline.run_id }}
+          echo ::set-output name=run_link::"${{ env.KUBEFLOW_PORTAL }}/pipeline/#/runs/details/${{ steps.run_training_pipeline.run_id }}"
 
       - name: Post run link to thread using curl
         run: |
