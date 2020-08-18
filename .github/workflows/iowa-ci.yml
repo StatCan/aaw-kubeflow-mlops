@@ -268,7 +268,7 @@ jobs:
             --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv | tee output.txt
           run_id=$(grep "Run id:" output.txt | sed -E 's/^Run id: (.*)$/\1/')
           echo Got run_id: $run_id
-          echo ::set-output name=run_id::run_id
+          echo ::set-output name=run_id::$run_id
 
       - name: Get run link
         id: get_run_link
