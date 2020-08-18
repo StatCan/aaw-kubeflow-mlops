@@ -126,9 +126,9 @@ def main():
     pipeline_params['minio_secret_key'] = minio_secret_key
 
     run = client.run_pipeline(exp.id,
-                        job_name=args.run_name,
-                        params=pipeline_params,
-                        pipeline_id=args.pipeline_id)
+                              job_name=args.run_name,
+                              params=pipeline_params,
+                              pipeline_id=args.pipeline_id)
     print(f"Run id: {run.id}")
 
 

@@ -102,8 +102,9 @@ def copy_to_minio(minio_url, bucket, access_key, secret_key, sourcefile,
     s3.fput_object(bucket, destination, sourcefile)
 
 
-def minio_find_files_matching_pattern(minio_url, bucket, access_key, secret_key,
-                                      pattern, prefix='', recursive=True):
+def minio_find_files_matching_pattern(minio_url, bucket, access_key,
+                                      secret_key, pattern, prefix='',
+                                      recursive=True):
     """
     Returns all files in a minio location that match the given pattern
 
