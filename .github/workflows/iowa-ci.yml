@@ -60,6 +60,7 @@ jobs:
     outputs:
       event_ref: ${{ env.event_ref }}
       event_git_sha: ${{ steps.get_git_sha.outputs.event_git_sha }}
+      # If not a PR, this will be blank (eg: if a push/merge to a watched branch)
       pr_number: ${{ env.pr_number }}
     steps:
       # todo: I think I can just checkout once below after context is determined?
