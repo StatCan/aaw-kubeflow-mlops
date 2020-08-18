@@ -222,10 +222,10 @@ jobs:
       - name: Build Pipeline with Pinned Containers
         working-directory: pipeline/iowa-train
         run: |
-	  pr_number="${{ needs.git_context.outputs.pr_number }}"
+          pr_number="${{ needs.git_context.outputs.pr_number }}"
           echo pr_number = "$pr_number"
           event_ref="${{ needs.git_context.outputs.event_ref }}"
-	  echo event_ref = "$event_ref"
+          echo event_ref = "$event_ref"
           papermill build_training_pipeline.ipynb completed.ipynb \
                     -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }} \
                     -p svm_c 100. \
