@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Note: Could also do this runner like here:
+# https://github.com/kaizentm/kubemlops/blob/master/code/notebook-comp/src/program.py
+# They run from inside python rather than shell, can then use argparse etc.
+# Maybe make a generic wrapper that passes all args to notebook and checks
+# if they were expected?
+
 # TODO: Make this into a generic papermill wrapper that just blindly accepts 
 # --kwargs and assigns them as -p variables, and also auto-generates the 
 # completed notebook path?  Or just stop caring about returning the completed 

@@ -90,7 +90,8 @@ done
 # KFP may pass filenames with parent directories that do not yet exist
 # Create directories for output files
 mkdir -p `dirname $OUTPUT_NOTEBOOK`
-mkdir -p `dirname $RESULTS_FILE_PREFIX`
+mkdir -p `dirname $OUTPUT_CLASSIFICATION_REPORT_FILENAME`
+mkdir -p `dirname $OUTPUT_F1_FILENAME`
 
 cmd="papermill $NOTEBOOK $OUTPUT_NOTEBOOK -p data $DATA -p model $MODEL -p output_classification_report_filename $OUTPUT_CLASSIFICATION_REPORT_FILENAME -p output_f1_filename $OUTPUT_F1_FILENAME"
 echo Executing: $cmd
