@@ -18,6 +18,15 @@ env:
   ACR_REPOSITORY: "mlops"
 
 jobs:
+  # TODO: Remove after debugging
+  DEBUG_dump_context:
+    runs-on: ubuntu-latest
+    env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+    steps:
+      - name: Dump GitHub context
+        run: echo "$GITHUB_CONTEXT"
+
   issue_comment_context:
     runs-on: ubuntu-latest
     outputs:
@@ -95,6 +104,12 @@ jobs:
     if: github.event_name != 'issue_comment'
     needs: [git_context]
     steps:
+      - uses: actions/checkout@v2
+        with:
+          # I think this is equivalent to doing 
+          #   git fetch origin ${{ ...event_ref }}
+          #   git checkout FETCH_HEAD
+          ref: ${{ needs.git_context.outputs.event_ref }}
       - name: DEBUG Post run link to thread
         run: |
           echo $REPO
@@ -105,13 +120,6 @@ jobs:
         env:
           REPO: ${{ github.repository }}
           PR_NUM: ${{ needs.git_context.outputs.pr_number }}
-
-      - uses: actions/checkout@v2
-        with:
-          # I think this is equivalent to doing 
-          #   git fetch origin ${{ ...event_ref }}
-          #   git checkout FETCH_HEAD
-          ref: ${{ needs.git_context.outputs.event_ref }}
       - uses: TrueBrain/actions-flake8@master
         with:
           path: "containers"
