@@ -51,7 +51,7 @@ jobs:
     outputs:
       event_ref: ${{ env.event_ref }}
       event_git_sha: ${{ steps.get_git_sha.outputs.event_git_sha }}
-      pr_number: ${{ steps.get_pr_number.outputs.pr_number }}
+      pr_number: ${{ env.pr_number }}
     steps:
       # todo: I think I can just checkout once below after context is determined?
       - uses: actions/checkout@v2
@@ -80,17 +80,32 @@ jobs:
           git_sha="$(git rev-parse HEAD)"
           echo "Storing git SHA $git_sha to environment variable"
           echo ::set-output name=event_git_sha::$git_sha
-      - name: Get PR number via github event context
-        id: get_pr_number
+      # Could also pull issue number from github.event.issue.number
+      - name: Get PR number if PR comment
+        if: needs.issue_comment_context.outputs.is_pr_comment == true
         run: |
-          echo "Saving PR number from github.event.issue.number (${{ github.event.issue.number }}) to environment variable"
-          echo ::set-output name=pr_number::${{ github.event.issue.number }}
+          echo ::set-env name=pr_number::${{ needs.issue_comment_context.outputs.pr_number }}
+      - name: Get PR number if not PR comment
+        if: needs.issue_comment_context.outputs.is_pr_comment != true
+        run: |
+          echo ::set-env name=pr_number::${{ github.event.number }}
 
   code_quality_checks:
     runs-on: ubuntu-latest
     if: github.event_name != 'issue_comment'
     needs: [git_context]
     steps:
+      - name: DEBUG Post run link to thread
+        run: |
+          echo $REPO
+          echo $PR_NUM
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -X POST -d '{"body": "test message DEBUG"}' \
+               "https://api.github.com/repos/${REPO}/issues/${PR_NUM}/comments"
+        env:
+          REPO: ${{ github.repository }}
+          PR_NUM: ${{ needs.git_context.outputs.pr_number }}
+
       - uses: actions/checkout@v2
         with:
           # I think this is equivalent to doing 
@@ -231,6 +246,7 @@ jobs:
           echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
 
       - name: Run Training Pipeline
+        id: run_training_pipeline
         working-directory: pipeline/iowa-train
         # Removed while debugging:
           # --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
@@ -246,4 +262,22 @@ jobs:
             --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
             --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
             --data_train andrew-scribner/iowa/processed/train/2020-08-13_18:02:01_train.csv \
-            --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv
+            --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv | tee output.txt
+          echo ::set-output name=link::$(grep "Run link" output.txt | sed -E 's/^Run link: (.*)$/\1/')
+      - name: Post run link to thread
+        run: |
+          echo $REPO
+          echo $PR_NUM
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -X POST -d '{"body": "Run link from manual way: <a href="${{ steps.run_training_pipeline.outputs.link }}">here</a>"}' \
+               "https://api.github.com/repos/${REPO}/issues/${PR_NUM}/comments"
+        env:
+          REPO: ${{ github.repository }}
+          PR_NUM: ${{ needs.git_context.outputs.pr_number }}
+      - uses: unsplash/comment-on-pr@v1.2.0
+        name: Comment with Run Link
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          msg: 'Run link: <a href="${{ steps.run_training_pipeline.outputs.link }}">here</a>'
+          check_for_duplicate_msg: false
