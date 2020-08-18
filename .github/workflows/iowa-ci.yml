@@ -247,7 +247,7 @@ jobs:
           echo "pipeline id: $PIPELINE_ID"
           echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
 
-      - name: Run Training Pipeline
+      - name: Run Training Pipeline A
         id: run_training_pipeline
         working-directory: pipeline/iowa-train
         # Removed while debugging:
@@ -267,7 +267,48 @@ jobs:
             --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv 2>&1 > output.txt
           echo "Show results from running script:"
           cat output.txt
-          echo ::set-output name=link::$(grep "Run link" output.txt | sed -E 's/^Run link: (.*)$/\1/')
+          echo ::set-output name=link::STUFF
+
+      - name: Run Training Pipeline B
+        id: run_training_pipeline_b
+        working-directory: pipeline/iowa-train
+        # Removed while debugging:
+          # --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
+          # --workspace ${{ secrets.AML_WORKSPACE }} \
+        # TODO: Flexible dataset specs?  Or just define via pipeline?
+        run: |
+          python run_training_pipeline.py \
+            --kfp_host ${{ secrets.KFP_HOST }} \
+            --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
+            --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
+            --tenant ${{ secrets.tenant }} \
+            --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+            --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+            --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+            --data_train andrew-scribner/iowa/processed/train/2020-08-13_18:02:01_train.csv \
+            --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv
+
+      - name: Run Training Pipeline C
+        id: run_training_pipeline_c
+        working-directory: pipeline/iowa-train
+        # Removed while debugging:
+          # --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
+          # --workspace ${{ secrets.AML_WORKSPACE }} \
+        # TODO: Flexible dataset specs?  Or just define via pipeline?
+        run: |
+          run_link=$(python run_training_pipeline.py \
+            --kfp_host ${{ secrets.KFP_HOST }} \
+            --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
+            --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
+            --tenant ${{ secrets.tenant }} \
+            --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+            --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+            --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+            --data_train andrew-scribner/iowa/processed/train/2020-08-13_18:02:01_train.csv \
+            --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv \
+              | grep "Run link" | sed -E 's/^Run link: (.*)$/\1/')
+          echo $run_link
+
       - name: Post run link to thread using curl
         run: |
           echo $REPO
