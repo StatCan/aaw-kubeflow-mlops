@@ -18,8 +18,8 @@ COPY score.sh /scripts/score.sh
 # 	 "-p",  "results_file_prefix",  "results" ]
 
 ENTRYPOINT [ "bash", "/scripts/score.sh", "--notebook", "/scripts/score.ipynb" ]
-CMD ["--output_notebook", "complete.ipynb",
-     "--data",  "test.csv",
-     "--model",  "model.joblib",
-     "--output_classification_report_filename",  "classification_report.csv",
+CMD ["--output_notebook", "complete.ipynb", \
+     "--data",  "test.csv", \
+     "--model",  "model.joblib", \
+     "--output_classification_report_filename",  "classification_report.csv", \
      "--output_f1_filename",  "f1.txt"]
