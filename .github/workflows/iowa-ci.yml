@@ -248,7 +248,7 @@ jobs:
           echo "pipeline id: $PIPELINE_ID"
           echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
 
-      - name: Run Training Pipeline A
+      - name: Run Training Pipeline
         id: run_training_pipeline
         working-directory: pipeline/iowa-train
         # Removed while debugging:
@@ -265,36 +265,15 @@ jobs:
             --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
             --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
             --data_train andrew-scribner/iowa/processed/train/2020-08-13_18:02:01_train.csv \
-            --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv 2>&1 > output.txt
-          echo "Show results from running script:"
-          cat output.txt
-          echo ::set-output name=run_id::$(grep "Run id:" | sed -E 's/^Run id: (.*)$/\1/')
-
-      - name: Run Training Pipeline B
-        id: run_training_pipeline_b
-        working-directory: pipeline/iowa-train
-        # Removed while debugging:
-          # --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
-          # --workspace ${{ secrets.AML_WORKSPACE }} \
-        # TODO: Flexible dataset specs?  Or just define via pipeline?
-        run: |
-          python run_training_pipeline.py \
-            --kfp_host ${{ secrets.KFP_HOST }} \
-            --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
-            --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
-            --tenant ${{ secrets.tenant }} \
-            --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
-            --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
-            --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-            --data_train andrew-scribner/iowa/processed/train/2020-08-13_18:02:01_train.csv \
             --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv | tee output.txt
-          echo "Show results from running script:"
-          cat output.txt
+          run_id=$(grep "Run id:" output.txt | sed -E 's/^Run id: (.*)$/\1/')
+          echo Got run_id: $run_id
+          echo ::set-output name=run_id::run_id
 
       - name: Get run link
         id: get_run_link
         run: |
-          echo ::set-output name=run_link::"${{ env.KUBEFLOW_PORTAL }}/pipeline/#/runs/details/${{ steps.run_training_pipeline.run_id }}"
+          echo ::set-output name=run_link::"${{ env.KUBEFLOW_PORTAL }}/pipeline/#/runs/details/${{ steps.run_training_pipeline.outputs.run_id }}"
 
       - name: Post run link to thread using curl
         run: |
