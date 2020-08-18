@@ -125,11 +125,11 @@ def main():
     pipeline_params['minio_access_key'] = minio_access_key
     pipeline_params['minio_secret_key'] = minio_secret_key
     
-    client.run_pipeline(exp.id,
+    run = client.run_pipeline(exp.id,
                         job_name=args.run_name,
                         params=pipeline_params,
                         pipeline_id=args.pipeline_id)
-
+    print(f"Run id: {run.id}")
 
 if __name__ == '__main__':
     exit(main())
