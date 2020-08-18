@@ -230,7 +230,7 @@ jobs:
                     -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }} \
                     -p svm_c 100. \
                     -p svm_gamma 0.1 \
-                    -p container_tag ${{ needs.git_context.outputs.event_git_sha }} \ 
+                    -p container_tag ${{ needs.git_context.outputs.event_git_sha }} \
                     -p github_event_ref "${{ needs.git_context.outputs.event_ref }}" \
                     -p pr_num "${{ needs.git_context.outputs.pr_number }}"
 
