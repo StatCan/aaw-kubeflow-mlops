@@ -3,7 +3,7 @@ import re
 
 def parse_env_var_def(s):
     """
-    Parse a string defining a shell environment variable, returning name and value
+    Parse string defining a shell environment variable, returning name and val
 
     Returns (varname, value) if matching pattern, else None
     """
@@ -18,6 +18,7 @@ def parse_env_var_def(s):
         if lhs and rhs:
             return lhs, rhs
     return None
+
 
 def get_env_variables_from_file(filepath):
     """
@@ -36,9 +37,10 @@ def get_minio_credentials(tenant, strip_http=True, verbose=True):
     Retrieve minio credentials from the vault (available from notebook server)
 
     Args:
-        strip_http (bool): If True, strips http:// from the start of the minio URL
+        strip_http (bool): If True, strips http:// from the start of the minio
+                           URL
         tenant (str): Minio tenant name, such as "minimal" or "premium"
-        
+
     Returns:
         (dict): Dict with keys:
             url
@@ -99,9 +101,10 @@ def copy_to_minio(minio_url, bucket, access_key, secret_key, sourcefile,
     # Put file into bucket
     s3.fput_object(bucket, destination, sourcefile)
 
-    
-def minio_find_files_matching_pattern(minio_url, bucket, access_key, secret_key,
-                                      pattern, prefix='', recursive=True):
+
+def minio_find_files_matching_pattern(minio_url, bucket, access_key,
+                                      secret_key, pattern, prefix='',
+                                      recursive=True):
     """
     Returns all files in a minio location that match the given pattern
 
