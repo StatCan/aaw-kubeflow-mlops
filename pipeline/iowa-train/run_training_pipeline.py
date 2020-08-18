@@ -1,10 +1,10 @@
 import kfp
 import argparse
 
-# DEBUG: Temp hack while I'm working in a separate directory but still need utils
+# DEBUG: Temp hack while working in a separate directory but still need utils
 import sys
 sys.path.append("../")
-from utils.auth.azure import get_access_token
+from utils.auth.azure import get_access_token  # noqa: E402
 
 
 def main():
@@ -116,20 +116,21 @@ def main():
 #     pipeline_params["token"] = token
     pipeline_params['data_train'] = args.data_train
     pipeline_params['data_test'] = args.data_test
-    
+
     # TODO: Handle these automatically once multitenancy is available
     minio_url = "http://minimal-tenant1-minio.minio:9000"
-    minio_access_key = "profile-andrew-scribner-7af84d76-cdd1-6bb6-ea17-bf2f35872d03"
+    minio_access_key = "profile-andrew-scribner-7af84d76-cdd1-6bb6-ea17-bf2f35872d03"  # noqa: E501
     minio_secret_key = "GYh1XnB5mCmCgdstPeNTcQxn"
     pipeline_params['minio_url'] = minio_url
     pipeline_params['minio_access_key'] = minio_access_key
     pipeline_params['minio_secret_key'] = minio_secret_key
-    
+
     run = client.run_pipeline(exp.id,
                         job_name=args.run_name,
                         params=pipeline_params,
                         pipeline_id=args.pipeline_id)
     print(f"Run id: {run.id}")
+
 
 if __name__ == '__main__':
     exit(main())
