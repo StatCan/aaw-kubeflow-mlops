@@ -227,8 +227,7 @@ jobs:
           echo event_ref = "$event_ref"
           papermill build_training_pipeline.ipynb completed.ipynb \
                     -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }} \
-                    -p svm_c 100. \
-                    -p svm_gamma 0.1 \
+                    -p param_file ../../containers/iowa-train/params.yml \
                     -p container_tag ${{ needs.git_context.outputs.event_git_sha }} \
                     -p github_event_ref "${{ needs.git_context.outputs.event_ref }}" \
                     -p pr_num "${{ needs.git_context.outputs.pr_number }}"
@@ -278,7 +277,7 @@ jobs:
       - name: Get run link
         id: get_run_link
         run: |
-          echo ::set-output name=run_link::"${{ env.KFP_DSHB }}/_/pipeline/#/runs/details/${{ steps.run_training_pipeline.outputs.run_id }}"
+          echo ::set-output name=run_link::"${{ secrets.KFP_DSHB }}/_/pipeline/#/runs/details/${{ steps.run_training_pipeline.outputs.run_id }}"
 
       - uses: unsplash/comment-on-pr@v1.2.0
         name: Post run link to thread using unsplash action
