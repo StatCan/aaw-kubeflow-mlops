@@ -1,8 +1,7 @@
 name: Train
 inputs:
 - {name: data_train, type: String}
-- {name: svm_gamma, type: Float}
-- {name: svm_c, type: Float}
+- {name: param_file, type: String}
 
 outputs:
 - {name: model}
@@ -25,6 +24,5 @@ implementation:
       '--output_notebook', {outputPath: completed_notebook},
       '--data', {inputPath: data_train},
       '--output_model', {outputPath: model},
-      '--svm_gamma', {inputValue: svm_gamma},
-      '--svm_c', {inputValue: svm_c}
+      '--param_file', {inputPath: param_file}
     ]

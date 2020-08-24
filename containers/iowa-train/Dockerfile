@@ -8,7 +8,6 @@ RUN pip install -r /scripts/requirements.txt && \
 COPY train.ipynb /scripts/train.ipynb
 COPY train.sh /scripts/train.sh
 
-# COPY data_train.csv data_train.csv
 # For local test, mount data as a volume
 # docker run -v path/to/local/data_train.csv:/data_train.csv tag
 
@@ -16,16 +15,15 @@ COPY train.sh /scripts/train.sh
 # but KFP does not guarantee that for outputPath files
 # ENTRYPOINT [ "papermill", "/scripts/train.ipynb" ]
 # CMD ["complete.ipynb", \
-# 	 "-p",  "data",  "data_train.csv", \
-# 	 "-p",  "output_model",  "model.joblib", \
-# 	 "-p",  "svm_gamma",  "0.1", \
-# 	 "-p",  "svm_c",  "100" \
-# 	 ]
+#     "-p",  "data",  "data_train.csv", \
+#     "-p",  "output_model",  "model.joblib", \
+#     "-p",  "svm_gamma",  "0.1", \
+#     "-p",  "svm_c",  "100" \
+#     ]
 
 ENTRYPOINT [ "bash", "/scripts/train.sh", "--notebook", "/scripts/train.ipynb" ]
 CMD ["--output_notebook", "complete.ipynb", \
-	 "--data",  "data_train.csv", \
-	 "--output_model",  "model.joblib", \
-	 "--svm_gamma",  "0.1", \
-	 "--svm_c",  "100" \
-	 ]
+     "--data",  "data_train.csv", \
+     "--output_model",  "model.joblib", \
+     "--param_file",  "params.yml", \
+     ]

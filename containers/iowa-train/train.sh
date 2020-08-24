@@ -53,18 +53,9 @@ while (( "$#" )); do
         exit 1
       fi
       ;;
-    --svm_gamma)
+    --param_file)
       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
-        SVM_GAMMA=$2
-        shift 2
-      else
-        echo "Error: Argument for $1 is missing" >&2
-        exit 1
-      fi
-      ;;
-    --svm_c)
-      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
-        SVM_C=$2
+        PARAM_FILE=$2
         shift 2
       else
         echo "Error: Argument for $1 is missing" >&2
@@ -89,6 +80,6 @@ done
 mkdir -p `dirname $OUTPUT_NOTEBOOK`
 mkdir -p `dirname $OUTPUT_MODEL`
 
-cmd="papermill $NOTEBOOK $OUTPUT_NOTEBOOK -p data $DATA -p output_model $OUTPUT_MODEL -p svm_gamma $SVM_GAMMA -p svm_C $SVM_C"
+cmd="papermill $NOTEBOOK $OUTPUT_NOTEBOOK -p data $DATA -p output_model $OUTPUT_MODEL -p param_file $PARAM_FILE"
 echo Executing: $cmd
 eval $cmd
