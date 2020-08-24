@@ -1,2 +1,2 @@
 svm_gamma: 0.1
-svm_c: 100.
+svm_c: 500.
