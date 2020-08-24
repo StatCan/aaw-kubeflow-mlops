@@ -277,7 +277,7 @@ jobs:
       - name: Get run link
         id: get_run_link
         run: |
-          echo ::set-output name=run_link::"${{ env.KFP_DSHB }}/_/pipeline/#/runs/details/${{ steps.run_training_pipeline.outputs.run_id }}"
+          echo ::set-output name=run_link::"${{ secrets.KFP_DSHB }}/_/pipeline/#/runs/details/${{ steps.run_training_pipeline.outputs.run_id }}"
 
       - uses: unsplash/comment-on-pr@v1.2.0
         name: Post run link to thread using unsplash action
