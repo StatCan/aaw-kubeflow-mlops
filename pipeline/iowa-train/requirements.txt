@@ -1,3 +1,4 @@
 kfp
 papermill
 ipykernel
+pyyaml
