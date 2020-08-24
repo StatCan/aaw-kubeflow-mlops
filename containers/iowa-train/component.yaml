@@ -7,6 +7,7 @@ inputs:
 outputs:
 - {name: model}
 - {name: completed_notebook}
+- {name: params}
 
 # Use a fake image name for now.  This is a template component that we can reuse later
 # by loading it then doing a 
@@ -25,6 +26,7 @@ implementation:
       '--output_notebook', {outputPath: completed_notebook},
       '--data', {inputPath: data_train},
       '--output_model', {outputPath: model},
+      '--output_params', {outputPath: params},
       '--svm_gamma', {inputValue: svm_gamma},
       '--svm_c', {inputValue: svm_c}
     ]
