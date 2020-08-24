@@ -12,7 +12,7 @@
 # notebook?
 
 # Example training call
-# bash train.sh --notebook train.ipynb --output_notebook complete.ipynb --data data_train.csv --output_model model.joblib --svm_gamma 0.1 --svm_c 100
+# bash train.sh --notebook train.ipynb --output_notebook complete.ipynb --data data_train.csv --output_model model.joblib --param_file params.yml
 
 PARAMS=""
 while (( "$#" )); do
