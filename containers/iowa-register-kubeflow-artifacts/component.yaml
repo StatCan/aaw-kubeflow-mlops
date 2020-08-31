@@ -1,0 +1,38 @@
+name: Register Kubeflow Artifacts
+inputs:
+- {name: workspace, type: String}
+- {name: run_id, type: String}
+- {name: model_uri, type: String}
+- {name: train_uri, type: String}
+- {name: train_version, type: String}
+- {name: score_uri, type: String}
+- {name: score_version, type: String}
+- {name: params_file, type: String}
+- {name: metrics_uri, type: String}
+- {name: metrics_file, type: String}
+
+# Use a fake image name for now.  This is a template component that we can reuse later
+# by loading it then doing a 
+# def use_image(image_name):
+#   def _use_image(task):
+#     task.image = image_name
+#     return task
+# instanced_op_task.apply(use_image(my_image_name))
+#
+# Could we just leave image out entirely?
+implementation:
+  container:
+    image: not.a.real.image/iowa-register-kubeflow-artifacts:latest
+    command: [
+        'bash', '/scripts/register.py',
+         '--workspace', {inputValue: workspace},
+         '--run_id', {inputValue: run_id},
+         '--model_uri', {inputValue: model_uri},
+         '--train_uri', {inputValue: train_uri},
+         '--train_version', {inputValue: train_version},
+         '--score_uri', {inputValue: score_uri},
+         '--score_version', {inputValue: score_version},
+         '--params_file', {inputPath: params_file},
+         '--metrics_uri', {inputValue: metrics_uri},
+         '--metrics_file', {inputPath: metrics_file}
+        ]
