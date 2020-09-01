@@ -11,6 +11,7 @@ env:
   REGISTRY_NAME: k8scc01covidmlopsacr
   CLUSTER_NAME: k8s-cancentral-02-covid-aks
   CLUSTER_RESOURCE_GROUP: k8s-cancentral-01-covid-aks
+  MLFLOW_EXPERIMENT: 2
 
 jobs:
   deploy_to_qa:
@@ -72,6 +73,7 @@ jobs:
         cd $GITHUB_WORKSPACE/containers/seldon-score
         echo "debug outpout "
         echo "mlflow_run_id "$mlflow_run_id
+        echo "MLFLOW_EXPERIMENT "$MLFLOW_EXPERIMENT
         docker build $GITHUB_WORKSPACE/containers/seldon-score -t ${{ secrets.MODEL_IMAGE_NAME }}:$RUN_ID
         docker push ${{ secrets.MODEL_IMAGE_NAME }}:$RUN_ID
       env:
