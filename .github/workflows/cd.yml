@@ -2,8 +2,8 @@ name: CD
 # The pipeline is triggered on:
 #  - Repository Dispatch type of "model is registered"
 on:
-  repository_dispatch:
-    types: [Model is registered]
+  push:
+    branches: [ritter-class-deploy]
 
 # Environment variables available to all jobs and steps in this workflow
 env:
@@ -107,46 +107,3 @@ jobs:
             tag: "${{ steps.deh.outputs.RUN_ID }}"
           imagePullSecrets:
             - name: k8scc01covidmlopsacr-registry-connection
-
-  deploy_to_uat:
-    runs-on: ubuntu-latest
-    needs: deploy_to_qa
-    if: false
-
-    steps:
-    - name: Copy Repository Contents
-      uses: actions/checkout@master
-
-    - run: |
-        mkdir -p /home/runner/work/_temp/_github_home/
-        cp $KUBECONFIG /home/runner/work/_temp/_github_home/KUBECONFIG
-
-    - name: Deploy Model to KFServing
-      uses: 'statcan/actions/helm@master'
-      env:
-        KUBECONFIG: /github/home/KUBECONFIG
-        RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
-      with:
-        release: 'kfserving-score'
-        namespace: 'serving'
-        tillerNamespace: 'serving'
-        chart: './containers/seldon-score/chart'
-        token: '${{ github.token }}'
-        values: |
-          image:
-            repository: "${{ secrets.KFSERVING_MODEL_IMAGE_NAME }}"
-            tag: "$RUN_ID"
-          imagePullSecrets:
-            - name: k8scc01covidmlopsacr-registry-connection
-
-  deploy_to_prod:
-    runs-on: ubuntu-latest
-    needs: deploy_to_uat
-
-    steps:
-    - name: Copy Repository Contents
-      uses: actions/checkout@master
-
-    - name: Install Python dependencies
-      run: |
-        pip3 install requests --upgrade
