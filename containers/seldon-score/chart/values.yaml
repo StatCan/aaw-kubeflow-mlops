@@ -1,5 +1,5 @@
 name: seldon
-namespace: serving
+namespace: christian-ritter
 image:
   repository: statcan/seldon-score
   tag: seldon
