@@ -75,8 +75,8 @@ jobs:
         cd $GITHUB_WORKSPACE/containers/seldon-score
         echo "debug outpout "
         echo "MLFLOW_RUN_ID "$MLFLOW_RUN_ID
-        docker build $GITHUB_WORKSPACE/containers/seldon-score -t $MODEL_IMAGE_NAME:$RUN_ID
-        docker push $MODEL_IMAGE_NAME:$RUN_ID
+        docker build $GITHUB_WORKSPACE/containers/seldon-score -t ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:$RUN_ID
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:$RUN_ID
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
 
