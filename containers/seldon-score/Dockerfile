@@ -12,3 +12,4 @@ COPY score.py requirements.txt model.h5 ./
 RUN pip install --no-cache-dir -r ./requirements.txt
 
 CMD ["sh","-c","gunicorn --bind 0.0.0.0:$PORT --workers $WORKERS --threads $THREADS score"]
+
