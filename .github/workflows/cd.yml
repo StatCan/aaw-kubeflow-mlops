@@ -70,6 +70,8 @@ jobs:
     - name: Build Scoring image
       run: |
         cd $GITHUB_WORKSPACE/containers/seldon-score
+        echo "debug outpout "
+        echo "mlflow_run_id "$mlflow_run_id
         docker build $GITHUB_WORKSPACE/containers/seldon-score -t ${{ secrets.MODEL_IMAGE_NAME }}:$RUN_ID
         docker push ${{ secrets.MODEL_IMAGE_NAME }}:$RUN_ID
       env:
