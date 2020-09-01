@@ -11,7 +11,9 @@ env:
   REGISTRY_NAME: k8scc01covidmlopsacr
   CLUSTER_NAME: k8s-cancentral-02-covid-aks
   CLUSTER_RESOURCE_GROUP: k8s-cancentral-01-covid-aks
-  MLFLOW_EXPERIMENT: 2
+  MLFLOW_EXPERIMENT: 1 # 1 for mlops, 2 for newsdata
+  MLFLOW_RUN_ID: 116ad70a24fe4350b0ea2d5d70a008ce
+
 
 jobs:
   deploy_to_qa:
@@ -61,9 +63,9 @@ jobs:
     - name: Download model
       run: |
         cd $GITHUB_WORKSPACE/containers/seldon-score
-        mlflow_run_id=$(curl -H "Authorization: Bearer ${JWT_TOKEN}" -d '{"experiment_ids":['$MLFLOW_EXPERIMENT'],"filter":"tags.external_run_id='\'''$RUN_ID''\''"}' ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/runs/search | jq -r '.runs[0].info.run_id')
-        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.h5&run_uuid='$mlflow_run_id > model.h5
-        echo "::set-env name=mlflow_run_id::$mlflow_run_id"
+        #mlflow_run_id=$(curl -H "Authorization: Bearer ${JWT_TOKEN}" -d '{"experiment_ids":['$MLFLOW_EXPERIMENT'],"filter":"tags.external_run_id='\'''$RUN_ID''\''"}' ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/runs/search | jq -r '.runs[0].info.run_id')
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.h5&run_uuid='$MLFLOW_RUN_ID > model.h5
+        # echo "::set-env name=mlflow_run_id::$mlflow_run_id"
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
         MLFLOW_EXPERIMENT: ${{ secrets.MLFLOW_EXPERIMENT }}
@@ -72,7 +74,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/containers/seldon-score
         echo "debug outpout "
-        echo "mlflow_run_id "$mlflow_run_id
+        echo "MLFLOW_RUN_ID "$MLFLOW_RUN_ID
         echo "MLFLOW_EXPERIMENT "$MLFLOW_EXPERIMENT
         docker build $GITHUB_WORKSPACE/containers/seldon-score -t ${{ secrets.MODEL_IMAGE_NAME }}:$RUN_ID
         docker push ${{ secrets.MODEL_IMAGE_NAME }}:$RUN_ID
@@ -81,7 +83,7 @@ jobs:
 
     - name: Promote model to Staging
       run: |
-        body=$(curl -H "Authorization: Bearer ${JWT_TOKEN}" ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/model-versions/search?filter=run_id%3D%27${mlflow_run_id}%27 | jq '.model_versions[0] | {name: .name, version: .version, stage: $stage}' --arg stage Staging --compact-output)
+        body=$(curl -H "Authorization: Bearer ${JWT_TOKEN}" ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/model-versions/search?filter=run_id%3D%27${MLFLOW_RUN_ID}%27 | jq '.model_versions[0] | {name: .name, version: .version, stage: $stage}' --arg stage Staging --compact-output)
         curl -H "Authorization: Bearer ${JWT_TOKEN}" -d $body ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/model-versions/transition-stage
 
     - run: |
