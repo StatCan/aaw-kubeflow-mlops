@@ -2,8 +2,9 @@ name: CD
 # The pipeline is triggered on:
 #  - Repository Dispatch type of "model is registered"
 on:
+  push:
   repository_dispatch:
-    types: [Model is registered]
+    branches: [ritter-class-deploy]
 
 # Environment variables available to all jobs and steps in this workflow
 env:
