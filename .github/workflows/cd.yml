@@ -2,8 +2,8 @@ name: CD
 # The pipeline is triggered on:
 #  - Repository Dispatch type of "model is registered"
 on:
-  push:
-    branches: [ritter-class-deploy]
+  repository_dispatch:
+    types: [Model is registered]
 
 # Environment variables available to all jobs and steps in this workflow
 env:
@@ -38,14 +38,6 @@ jobs:
     - name: Install Python dependencies
       run: |
         pip3 install requests --upgrade
-
-    - name: Handle Deploy Event
-      id: deh
-      run: |
-        python3 event_dispatcher.py --event_type "deploy"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      working-directory: .github/events
 
     - name: Install Python dependencies
       run: |
