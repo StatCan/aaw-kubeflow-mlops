@@ -65,7 +65,7 @@ jobs:
         cd $GITHUB_WORKSPACE/containers/seldon-score
         #mlflow_run_id=$(curl -H "Authorization: Bearer ${JWT_TOKEN}" -d '{"experiment_ids":['$MLFLOW_EXPERIMENT'],"filter":"tags.external_run_id='\'''$RUN_ID''\''"}' ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/runs/search | jq -r '.runs[0].info.run_id')
         curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.h5&run_uuid='$MLFLOW_RUN_ID > model.h5
-        cat model.h5
+        #cat model.h5
         # echo "::set-env name=mlflow_run_id::$mlflow_run_id"
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
@@ -77,7 +77,7 @@ jobs:
         echo "debug outpout "
         echo "MLFLOW_RUN_ID "$MLFLOW_RUN_ID
         #echo "MLFLOW_EXPERIMENT "$MLFLOW_EXPERIMENT
-        docker build $GITHUB_WORKSPACE/containers/seldon-score -t ${{ secrets.MODEL_IMAGE_NAME }}:$RUN_ID
+        docker build $GITHUB_WORKSPACE/containers/seldon-score -t ${{ secrets.MODEL_IMAGE_NAME }}:$MLFLOW_RUN_ID
         docker push ${{ secrets.MODEL_IMAGE_NAME }}:$RUN_ID
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
