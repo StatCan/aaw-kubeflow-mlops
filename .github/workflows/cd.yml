@@ -101,6 +101,7 @@ jobs:
         tillerNamespace: 'serving'
         chart: './containers/seldon-score/chart'
         token: '${{ github.token }}'
+        # below we are overwriting the default helm chart values.yml params
         values: |
           image:
             repository: "${{ secrets.SELDON_MODEL_IMAGE_NAME }}"
