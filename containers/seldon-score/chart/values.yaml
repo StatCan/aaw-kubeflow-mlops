@@ -1,4 +1,4 @@
-name: testtwo # name of the model, defines endpoint under serving/name
+name: test # name of the model, defines endpoint under serving/name
 namespace: serving
 image:
   repository: statcan/seldon-score
