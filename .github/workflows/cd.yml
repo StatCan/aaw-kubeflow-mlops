@@ -110,5 +110,5 @@ jobs:
           imagePullSecrets:
             - name: k8scc01covidmlopsacr-registry-connection
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v2
+    #- name: Setup tmate session
+    #  uses: mxschmitt/action-tmate@v2
