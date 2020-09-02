@@ -104,7 +104,7 @@ jobs:
         # below we are overwriting the default helm chart values.yml params
         values: |
           image:
-            repository: "${{ secrets.SELDON_MODEL_IMAGE_NAME }}"
-            tag: "${{ steps.deh.outputs.RUN_ID }}"
+            repository: "${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME"
+            tag: "${{ github.sha }}"
           imagePullSecrets:
             - name: k8scc01covidmlopsacr-registry-connection
