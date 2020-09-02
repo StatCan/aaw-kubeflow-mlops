@@ -97,7 +97,7 @@ jobs:
       env:
         KUBECONFIG: /github/home/KUBECONFIG
       with:
-        release: 'seldon-score'
+        release: 'seldon-score-three'
         namespace: 'serving'
         tillerNamespace: 'serving'
         chart: './containers/seldon-score/chart'
