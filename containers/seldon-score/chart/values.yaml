@@ -1,4 +1,4 @@
-name: seldon
+name: mytestmodel
 namespace: serving
 image:
   repository: statcan/seldon-score
