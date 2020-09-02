@@ -105,7 +105,7 @@ jobs:
         # below we are overwriting the default helm chart values.yml params
         values: |
           image:
-            repository: "${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME"
+            repository: "${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.MODEL_IMAGE_NAME }}"
             tag: "${{ github.sha }}"
           imagePullSecrets:
             - name: k8scc01covidmlopsacr-registry-connection
