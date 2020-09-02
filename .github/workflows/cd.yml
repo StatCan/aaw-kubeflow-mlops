@@ -8,7 +8,7 @@ on:
 
 # Environment variables available to all jobs and steps in this workflow
 env:
-  REGISTRY_NAME: k8scc01covidacr #k8scc01covidmlopsacr
+  REGISTRY_NAME: #k8scc01covidmlopsacr
   CLUSTER_NAME: k8s-cancentral-02-covid-aks
   CLUSTER_RESOURCE_GROUP: k8s-cancentral-01-covid-aks
   #MLFLOW_EXPERIMENT_NUM: 1 # 1 for mlops, 2 for newsdata
