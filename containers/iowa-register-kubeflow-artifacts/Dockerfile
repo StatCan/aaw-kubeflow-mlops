@@ -1,4 +1,6 @@
-FROM python:3.8-buster
+FROM python:3.7-buster
+
+RUN python3 -m pip install --upgrade pip
 
 COPY register.py /scripts/register.py
 COPY requirements.txt /requirements.txt

@@ -1,3 +1,5 @@
+# Note: This installs tensorflow (2.3.0 as of testing) so it takes a while.  
+# I should use a different base image.  Use tensorflow or one of our ml images?
 kubeflow-metadata
 pandas
 pathlib2
