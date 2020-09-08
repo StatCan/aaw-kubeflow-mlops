@@ -19,7 +19,7 @@ def load_model():
         nltk.download('punkt')
         print('Attempting to load model')
        
-        model = joblib.load('/app/model.pkl')
+        model = joblib.load('./app/model.pkl')
         print('Done loading pipeline!')
 
 
@@ -36,8 +36,9 @@ def run():
         post = request.get_json()
         print(post)
         text = post['text']
+        print('test input: ',text)
         sentences = process_text(text)
-
+        print('sentences: ', sentences)
         current_time = time.time()
 
         sent_predictions = model.predict(sentences)
@@ -50,12 +51,11 @@ def run():
         inference_time = datetime.timedelta(seconds=current_time - prev_time)
 
 
-
         payload = {
             'time': inference_time.total_seconds(),
             'doc_prediction': doc_prediction,
-            'sent_prediction': sent_predictions,
-            'sent_prediction_scores': sent_prediction_scores,
+            #'sent_prediction': sent_predictions,
+            #'sent_prediction_scores': sent_prediction_scores,
         }
 
         print('Input ({}), Prediction ({})'.format(post['text'], payload))
@@ -64,10 +64,11 @@ def run():
 
 
 def process_text(doc):
-    
-    sentences = nltk.sent_tokenize(doc)
+
+    return nltk.sent_tokenize(doc)
 
 
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0')
+
