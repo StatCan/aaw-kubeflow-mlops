@@ -19,7 +19,7 @@ def load_model():
         nltk.download('punkt', download_dir='/tmp')
         print('Attempting to load model')
        
-        model = joblib.load('./app/model.pkl')
+        model = joblib.load('/app/model.pkl')
         print('Done loading pipeline!')
 
 
