@@ -1,0 +1,8 @@
+name: test # name of the model, defines endpoint under serving/name
+namespace: serving
+image:
+  repository: statcan/seldon-score
+  tag: seldon
+port: 8080
+# imagePullSecrets:
+#   - name: registry-connection
