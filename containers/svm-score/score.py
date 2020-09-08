@@ -16,7 +16,7 @@ model = None
 def load_model():
     global model
     if (model is None):
-        nltk.download('punkt', download_dir='/app')
+        nltk.download('punkt', download_dir='/tmp')
         print('Attempting to load model')
        
         model = joblib.load('./app/model.pkl')
