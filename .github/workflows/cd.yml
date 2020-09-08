@@ -106,6 +106,7 @@ jobs:
         token: '${{ github.token }}'
         # below we are overwriting the default helm chart values.yml params
         values: |
+          name: classifier-score
           image:
             repository: "${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.MODEL_IMAGE_NAME }}"
             tag: "${{ github.sha }}"
