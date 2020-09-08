@@ -6,7 +6,6 @@ import numpy as np
 from flask import Flask, request
 from sklearn.externals import joblib
 import nltk
-nltk.data.path.append('/app')
 
 
 application = Flask(__name__)
@@ -17,7 +16,7 @@ model = None
 def load_model():
     global model
     if (model is None):
-        nltk.download('punkt')
+        nltk.download('punkt', download_dir='/app')
         print('Attempting to load model')
        
         model = joblib.load('./app/model.pkl')
