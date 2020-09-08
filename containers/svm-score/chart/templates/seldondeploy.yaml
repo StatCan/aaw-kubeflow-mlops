@@ -18,6 +18,8 @@ spec:
       {{- end }}
         containers:
         - env:
+            - name: NLTK_DATA
+              value: /tmp
             - name: PREDICTIVE_UNIT_SERVICE_PORT
               value: "{{ .Values.port }}"
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
