@@ -6,6 +6,7 @@ import numpy as np
 from flask import Flask, request
 from sklearn.externals import joblib
 import nltk
+nltk.data.path.append('/app')
 
 
 application = Flask(__name__)
