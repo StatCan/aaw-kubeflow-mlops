@@ -67,7 +67,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/containers/svm-score
         curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.pkl&run_uuid='$MLFLOW_RUN_ID > model.pkl
-        #cat model.h5
+        cat model.pkl
         # echo "::set-env name=mlflow_run_id::$mlflow_run_id"
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
@@ -78,7 +78,7 @@ jobs:
         echo "debug outpout "
         echo "MLFLOW_RUN_ID "$MLFLOW_RUN_ID
         echo "${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}", ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}
-        echo "$RUN_ID", ${{ github.sha }}
+        echo ${{ github.sha }}
         docker build $GITHUB_WORKSPACE/containers/svm-score -t ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}
       env:
