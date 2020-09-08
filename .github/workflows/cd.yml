@@ -99,7 +99,7 @@ jobs:
       env:
         KUBECONFIG: /github/home/KUBECONFIG
       with:
-        release: 'seldon-score'
+        release: 'classifier-score'
         namespace: 'serving'
         tillerNamespace: 'serving'
         chart: './containers/svm-score/chart'
