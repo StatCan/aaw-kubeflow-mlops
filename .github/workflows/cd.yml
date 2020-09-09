@@ -4,7 +4,7 @@ name: CD
 on:
   push:
   repository_dispatch:
-    branches: [ritter-class-deploy]
+    branches: [ritter-class-deploy-pytorch]
 
 
 # Environment variables available to all jobs and steps in this workflow
@@ -15,7 +15,7 @@ env:
   #MLFLOW_EXPERIMENT_NUM: 1 # 1 for mlops, 2 for newsdata
   # MLFLOW_RUN_ID: 116ad70a24fe4350b0ea2d5d70a008ce # Will's model
   MLFLOW_RUN_ID: d8687947072f49f9a4cecaa22ad4ba9c
-  MODEL_IMAGE_NAME: newsdata_classbc_pytorch_1
+  MODEL_IMAGE_NAME: newsdata_classbc_pytorch_2
 
 
 jobs:

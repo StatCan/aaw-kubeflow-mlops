@@ -152,7 +152,6 @@ def process_text(doc):
     return nltk.sent_tokenize(doc)
 
 
-
 if __name__ == "__main__":
     application.run(host='0.0.0.0')
 
