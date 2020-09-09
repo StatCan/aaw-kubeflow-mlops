@@ -104,14 +104,14 @@ jobs:
       env:
         KUBECONFIG: /github/home/KUBECONFIG
       with:
-        release: 'classifier-torch-score'
+        release: 'classifier-pytorch-score'
         namespace: 'serving'
         tillerNamespace: 'serving'
         chart: './containers/pytorch-score/chart'
         token: '${{ github.token }}'
         # below we are overwriting the default helm chart values.yml params
         values: |
-          name: classifier-torch-score
+          name: classifier-pytorch-score
           image:
             repository: "${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.MODEL_IMAGE_NAME }}"
             tag: "${{ github.sha }}"
