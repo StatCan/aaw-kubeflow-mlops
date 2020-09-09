@@ -14,7 +14,7 @@ env:
   CLUSTER_RESOURCE_GROUP: k8s-cancentral-01-covid-aks
   #MLFLOW_EXPERIMENT_NUM: 1 # 1 for mlops, 2 for newsdata
   # MLFLOW_RUN_ID: 116ad70a24fe4350b0ea2d5d70a008ce # Will's model
-  MLFLOW_RUN_ID: 62877bdd08c8441db1a3e19046a145d2
+  MLFLOW_RUN_ID: d8687947072f49f9a4cecaa22ad4ba9c
   MODEL_IMAGE_NAME: newsdata_classbc_pytorch_1
 
 
@@ -66,9 +66,14 @@ jobs:
     - name: Download model
       run: |
         cd $GITHUB_WORKSPACE/containers/pytorch-score
-        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/model.pkl&run_uuid='$MLFLOW_RUN_ID > model.pkl
-        echo '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.pkl&run_uuid='$MLFLOW_RUN_ID
-        cat model.pkl
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=config.json&run_uuid='$MLFLOW_RUN_ID > config.json
+        cat config.json
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=pytorch_model.bin&run_uuid='$MLFLOW_RUN_ID > pytorch_model.bin
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=special_tokens_map.json&run_uuid='$MLFLOW_RUN_ID > special_tokens_map.json
+        cat special_tokens_map.json
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=tokenizer_config.json&run_uuid='$MLFLOW_RUN_ID > tokenizer_config.json
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=vocab.txt&run_uuid='$MLFLOW_RUN_ID > vocab.txt
+
         # echo "::set-env name=mlflow_run_id::$mlflow_run_id"
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}

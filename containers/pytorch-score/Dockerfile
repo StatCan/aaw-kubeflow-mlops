@@ -7,7 +7,7 @@ ENV PORT 8080
 
 WORKDIR $APP_HOME
 
-COPY score.py requirements.txt model.pkl ./
+COPY score.py requirements.txt config.json pytorch_model.bin special_tokens_map.json tokenizer_config.json vocab.txt ./
 
 RUN pip install --no-cache-dir -r ./requirements.txt
 
