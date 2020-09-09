@@ -50,12 +50,14 @@ def run():
 
         inference_time = datetime.timedelta(seconds=current_time - prev_time)
 
+        sent_predictions = [int(el) for el in list(sent_predictions)]
+        sent_prediction_scores = [float(el) for el in list(sent_prediction_scores)]
 
         payload = {
             'time': inference_time.total_seconds(),
             'doc_prediction': doc_prediction,
-            'sent_prediction': ['hello', 'world'] #list(sent_predictions)
-            #'sent_prediction_scores': sent_prediction_scores
+            'sent_prediction': sent_predictions,
+            'sent_prediction_scores': sent_prediction_scores
         }
 
         print('Input ({}), Prediction ({})'.format(post['text'], payload))
