@@ -6,6 +6,9 @@ import numpy as np
 from flask import Flask, request
 from sklearn.externals import joblib
 import nltk
+from transformers import BertForSequenceClassification, BertTokenizer
+import numpy as np
+import torch
 
 
 application = Flask(__name__)
