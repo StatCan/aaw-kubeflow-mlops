@@ -29,7 +29,7 @@ def run():
     if (request.method == 'GET'):
         return "Healthy"
     else:
-        load_model()
+        load_model() #
 
         prev_time = time.time()
 
