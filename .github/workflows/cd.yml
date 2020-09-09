@@ -15,7 +15,7 @@ env:
   #MLFLOW_EXPERIMENT_NUM: 1 # 1 for mlops, 2 for newsdata
   # MLFLOW_RUN_ID: 116ad70a24fe4350b0ea2d5d70a008ce # Will's model
   MLFLOW_RUN_ID: 62877bdd08c8441db1a3e19046a145d2
-  MODEL_IMAGE_NAME: newsdata_classbc_svm_1
+  MODEL_IMAGE_NAME: newsdata_classbc_pytorch_1
 
 
 jobs:
@@ -65,7 +65,7 @@ jobs:
 
     - name: Download model
       run: |
-        cd $GITHUB_WORKSPACE/containers/svm-score
+        cd $GITHUB_WORKSPACE/containers/pytorch-score
         curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/model.pkl&run_uuid='$MLFLOW_RUN_ID > model.pkl
         echo '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.pkl&run_uuid='$MLFLOW_RUN_ID
         cat model.pkl
@@ -75,12 +75,12 @@ jobs:
 
     - name: Build Scoring image
       run: |
-        cd $GITHUB_WORKSPACE/containers/svm-score
+        cd $GITHUB_WORKSPACE/containers/pytorch-score
         echo "debug outpout "
         echo "MLFLOW_RUN_ID "$MLFLOW_RUN_ID
         echo "${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}", ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}
         echo ${{ github.sha }}
-        docker build $GITHUB_WORKSPACE/containers/svm-score -t ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}
+        docker build $GITHUB_WORKSPACE/containers/pytorch-score -t ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/$MODEL_IMAGE_NAME:${{ github.sha }}
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
@@ -99,14 +99,14 @@ jobs:
       env:
         KUBECONFIG: /github/home/KUBECONFIG
       with:
-        release: 'classifier-score'
+        release: 'classifier-torch-score'
         namespace: 'serving'
         tillerNamespace: 'serving'
-        chart: './containers/svm-score/chart'
+        chart: './containers/pytorch-score/chart'
         token: '${{ github.token }}'
         # below we are overwriting the default helm chart values.yml params
         values: |
-          name: classifier-score
+          name: classifier-torch-score
           image:
             repository: "${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.MODEL_IMAGE_NAME }}"
             tag: "${{ github.sha }}"

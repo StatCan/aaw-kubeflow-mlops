@@ -53,9 +53,9 @@ def run():
 
         payload = {
             'time': inference_time.total_seconds(),
-            'doc_prediction': doc_prediction,
-            'sent_prediction': sent_predictions,
-            'sent_prediction_scores': sent_prediction_scores
+            'doc_prediction': doc_prediction
+            #'sent_prediction': sent_predictions,
+            #'sent_prediction_scores': sent_prediction_scores
         }
 
         print('Input ({}), Prediction ({})'.format(post['text'], payload))
