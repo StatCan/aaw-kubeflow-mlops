@@ -54,7 +54,7 @@ def run():
         payload = {
             'time': inference_time.total_seconds(),
             'doc_prediction': doc_prediction,
-            'sent_prediction': list(sent_predictions)
+            'sent_prediction': ['hello', 'world'] #list(sent_predictions)
             #'sent_prediction_scores': sent_prediction_scores
         }
 
