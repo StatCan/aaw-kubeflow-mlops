@@ -13,7 +13,7 @@ import torch
 application = Flask(__name__)
 
 model = None
-nltk.download('punkt', download_dir='/tmp')
+nltk.download('punkt', download_dir='/tmp') #test
 
 
 
