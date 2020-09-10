@@ -12,4 +12,3 @@ COPY score.py requirements.txt config.json pytorch_model.bin special_tokens_map.
 RUN pip install --no-cache-dir -r ./requirements.txt
 
 CMD ["sh","-c","gunicorn --bind 0.0.0.0:$PORT --workers $WORKERS --threads $THREADS score"]
-

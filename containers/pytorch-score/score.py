@@ -34,7 +34,7 @@ class bert_predictor():
         
         # Load the BERT tokenizer.
         print('Loading BERT tokenizer...')
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
+        self.tokenizer = BertTokenizer.from_pretrained(path, do_lower_case=True)
         print('vocab size ',self.tokenizer.vocab_size)
 
     def predict(self, sentences):
