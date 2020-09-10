@@ -4,7 +4,6 @@ import datetime
 import requests
 import numpy as np
 from flask import Flask, request
-from sklearn.externals import joblib
 import nltk
 from transformers import BertForSequenceClassification, BertTokenizer
 import numpy as np
