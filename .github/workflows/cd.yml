@@ -72,7 +72,9 @@ jobs:
         curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=special_tokens_map.json&run_uuid='$MLFLOW_RUN_ID > special_tokens_map.json
         cat special_tokens_map.json
         curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=tokenizer_config.json&run_uuid='$MLFLOW_RUN_ID > tokenizer_config.json
-        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=vocab.txt&run_uuid='$MLFLOW_RUN_ID > vocab.txt
+        # BERT: curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=vocab.txt&run_uuid='$MLFLOW_RUN_ID > vocab.txt
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=vocab.json&run_uuid='$MLFLOW_RUN_ID > vocab.json
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=merges.txt&run_uuid='$MLFLOW_RUN_ID > merges.txt
 
         # echo "::set-env name=mlflow_run_id::$mlflow_run_id"
       env:
@@ -118,5 +120,5 @@ jobs:
           imagePullSecrets:
             - name: k8scc01covidmlopsacr-registry-connection
 
-    #- name: Setup tmate session
-    #  uses: mxschmitt/action-tmate@v2
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v2

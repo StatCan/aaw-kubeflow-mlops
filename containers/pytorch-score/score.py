@@ -6,6 +6,7 @@ import numpy as np
 from flask import Flask, request
 import nltk
 from transformers import BertForSequenceClassification, BertTokenizer
+from transformers import RobertaForSequenceClassification, RobertaTokenizer
 import numpy as np
 import torch
 
@@ -95,11 +96,87 @@ class bert_predictor():
         return input_ids, attention_masks
 
 
+
+class roberta_predictor():
+    
+    def __init__(self, path):
+        
+        self.model = RobertaForSequenceClassification.from_pretrained(
+            path, #"bert-base-uncased", # Use the 12-layer BERT model, with an uncased vocab.
+            num_labels = 2, # The number of output labels--2 for binary classification.
+                            # You can increase this for multi-class tasks.   
+            output_attentions = False, # Whether the model returns attentions weights.
+            output_hidden_states = False, # Whether the model returns all hidden-states.
+        )
+        
+        # Load the BERT tokenizer.
+        print('Loading RobertaTokenizer tokenizer...')
+        self.tokenizer = RobertaTokenizer.from_pretrained(path, do_lower_case=True)
+        #print('vocab size ',self.tokenizer.vocab_size)
+
+    def predict(self, sentences):
+        
+        input_ids, attention_masks = self.tokenize(sentences)
+        input_ids = torch.tensor(input_ids)
+        attention_masks = torch.tensor(attention_masks)
+
+        
+        # Telling the model not to compute or store gradients, saving memory and 
+        # speeding up prediction
+        with torch.no_grad():
+            # Forward pass, calculate logit predictions
+            outputs = self.model(input_ids, token_type_ids=None, 
+                          attention_mask=attention_masks)
+            logits = outputs[0]
+            # Move logits and labels to CPU
+            probs = torch.softmax(logits,dim=1).detach().cpu().numpy()
+
+        probs = [float(prob[1]) for prob in probs]
+        return probs
+
+    
+    def tokenize(self, sentences):
+
+        MAX_LEN = 128
+
+        # Tokenize all of the sentences and map the tokens to thier word IDs.
+        input_ids = []
+        attention_masks = []
+
+        # For every sentence...
+        for sent in sentences:
+            # `encode` will:
+            #   (1) Tokenize the sentence.
+            #   (2) Prepend the `[CLS]` token to the start.
+            #   (3) Append the `[SEP]` token to the end.
+            #   (4) Map tokens to their IDs.
+            encoded_sent = self.tokenizer.encode_plus(
+                text=sent,  # Preprocess sentence
+                add_special_tokens=True,        # Add `[CLS]` and `[SEP]`
+                max_length=MAX_LEN,                  # Max length to truncate/pad
+                pad_to_max_length=True,         # Pad sentence to max length
+                return_attention_mask=True,     # Return attention mask
+                truncation=True # explicitly trunace longer sentences to MAX_LEN
+                )
+
+            # Add the encoded sentence to the list.
+            input_ids.append(encoded_sent['input_ids'])
+            attention_masks.append(encoded_sent['attention_mask'])
+
+        input_ids = np.array(input_ids)
+        # Print sentence 0, now as a list of IDs.
+        print('Original: ', sentences[0])
+        print('Token IDs:', input_ids[0])
+        print('attention Masks:', attention_masks[0])
+
+        return input_ids, attention_masks
+
 def load_model():
     global model
     if (model is None):
         print('Attempting to load model')
-        model = bert_predictor('/app')
+        #model = bert_predictor('/app')
+        model = roberta_predictor('/app')
         print('Done loading pytorch model!')
 
 
