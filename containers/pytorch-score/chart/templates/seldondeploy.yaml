@@ -39,4 +39,4 @@ spec:
       name: {{ .Values.name }}-classifier
       type: MODEL
     name: {{ .Values.name }}-predictor
-    replicas: 40
+    replicas: 1
