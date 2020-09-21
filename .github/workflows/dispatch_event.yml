@@ -1,4 +1,4 @@
-name: Receive Repository Dispatch Payload
+name: Receive Repository Dispatch Payload (master)
 # The pipeline is triggered on:
 #  - Repository Dispatch
 on: repository_dispatch

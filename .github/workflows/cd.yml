@@ -1,4 +1,4 @@
-name: CD
+name: CD (master)
 # The pipeline is triggered on:
 #  - Repository Dispatch type of "model is registered"
 on:
