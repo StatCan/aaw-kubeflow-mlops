@@ -1,4 +1,4 @@
-name: CI (master)
+name: CI MAIN
 # The pipeline is triggered on:
 #  - PR to master (code_quality_checks only)
 #  - Push to master (full cycle)
