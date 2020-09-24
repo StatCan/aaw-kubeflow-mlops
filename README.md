@@ -3,6 +3,7 @@
 This repository contains examples of completely integrated Kubeflow End-to-End Pipelines (KFP) using GitHub actions. Focus is on the creation of pluggable components that can make it easier to build your own pipelines enabling more advanced machine learning projects.
 
 The architecture of the sample is shown in the following diagram:
+
 ![Kubeflow MLOps Architecture Diagram](./docs/diagrams/kubeflow-mlops.png)
 
 The current pipelines that have been created against the pluggable components are:
