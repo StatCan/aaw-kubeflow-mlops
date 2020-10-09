@@ -25,14 +25,14 @@ implementation:
     image: not.a.real.image/iowa-register-kubeflow-artifacts:latest
     command: [
         'bash', '/scripts/register.py',
-         '--workspace', {inputValue: workspace},
-         '--run_id', {inputValue: run_id},
-         '--model_uri', {inputValue: model_uri},
-         '--train_uri', {inputValue: train_uri},
-         '--train_version', {inputValue: train_version},
-         '--score_uri', {inputValue: score_uri},
-         '--score_version', {inputValue: score_version},
-         '--params_file', {inputPath: params_file},
-         '--metrics_uri', {inputValue: metrics_uri},
-         '--metrics_file', {inputPath: metrics_file}
+                  '--workspace', {inputValue: workspace},
+                  '--run_id', {inputValue: run_id},
+                  '--model_uri', {inputValue: model_uri},
+                  '--train_uri', {inputValue: train_uri},
+                  '--train_version', {inputValue: train_version},
+                  '--score_uri', {inputValue: score_uri},
+                  '--score_version', {inputValue: score_version},
+                  '--params_file', {inputPath: params_file},
+                  '--metrics_uri', {inputValue: metrics_uri},
+                  '--metrics_file', {inputPath: metrics_file}
         ]

@@ -4,6 +4,23 @@ from uuid import uuid4
 from datetime import datetime
 import yaml
 
+# # Sample test command:
+# > local_copy_of_metrics_to_add_in_metadata.yaml \
+#     && echo "accuracy: 0.75" >> local_copy_of_metrics_to_add_in_metadata.yaml \
+#     && echo "precision: 0.75" >> local_copy_of_metrics_to_add_in_metadata.yaml
+# MODEL_ID=$RANDOM  # Random ID for demo so model is new in lineage explorer
+# echo "Logging model under unique_id $MODEL_ID"
+# python register.py \
+#     --workspace test_workspace \
+#     --model_uri /minio/path/to/model_$MODEL_ID \
+#     --train_uri /minio/path/to/train/data \
+#     --train_version unique_id_for_train_eg_hash \
+#     --score_uri /minio/path/to/score/data \
+#     --score_version unique_id_for_score_eg_hash \
+#     --params_file ../../pipeline/iowa-train/params.yml \
+#     --metrics_uri /minio/path/to/metrics \
+#     --metrics_file ./local_copy_of_metrics_to_add_in_metadata.yaml \
+#     --run_id pipeline_run_id_from_kfp
 
 # TODO:
 # - Workflow of passing metric/param URI AND a file with metric or param values
@@ -16,10 +33,14 @@ import yaml
 # - Break this into pieces?  Start of pipeline creates a workspace, datasets
 #   log individually, and models/metrics log as they're created?
 
+# TODO: Make a demo showing how to use this?
+# * Is this covered by the jupyter-notebooks demo?
+# * Could have gif/video exploring the explorer.  
+# * highlight how in the artifact screen things that are reuses of things (say referencing past training data) show without timestamp, etc.  
+
 DEFAULT_WORKSPACE_NAME = "iowa-train"
 
-
-def get_ws(workspace, description="", labels=None):  # noqa: E501
+def get_init_ws(workspace, description="", labels=None):  # noqa: E501
     """
     Returns an existing Kubeflow.Metadata workspace if exists, else returns new
     """
@@ -38,21 +59,24 @@ def get_ws(workspace, description="", labels=None):  # noqa: E501
         labels=labels)
     return ws
 
+def get_default_id():
+    return f"autogen_{str(uuid4())}"
 
-# def log_dataset(name, uri, version, execution, labels):
-#     """
-#     Logs a dataset's usage to Metadata execution
+def init_params_file(params_file):
+    if args.params_file is not None:
+        with open(args.params_file, 'r') as fin:
+            params = yaml.safe_load(fin)
+        model_type = params.get('model_type', None)
+        version = params.get('version', args.run_id)
+        training_framework = params.get('training_framework', None)
+    else:
+        params = None
+        model_type = None
+        version = None
+        training_framework = None
+    return params, model_type, version, training_framework
 
-#     Will reuse a dataset if a matching dataset already exists, else will create
-#     a new dataset.  Datasets are uniquely keyed by the union of:
-#     - name
-#     - uri
-#     - version
-#     """
-#     pass
-
-
-if __name__ == "__main__":
+def parse_args():
     parser = argparse.ArgumentParser(description="Log pipeline artifacts to "
                                                  "Kubeflow.Metadata")
     parser.add_argument('-w', '--workspace',
@@ -62,13 +86,13 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--train_uri',
                         help='Global path to training data')
     parser.add_argument('--train_version',
-                        default=None,
+                        default=get_default_id(),
                         help='Hash/version for training data (if None, will '
                         'auto generate a uuid)')
     parser.add_argument('-s', '--score_uri',
                         help='Global path to scoring data')
     parser.add_argument('--score_version',
-                        default=None,
+                        default=get_default_id(),
                         help='Hash/version for scoring data (if None, will '
                         'auto generate a uuid)'
                         )
@@ -86,46 +110,38 @@ if __name__ == "__main__":
                         'metric values that will be added to the metadata')
     parser.add_argument(
         '-r', '--run_id',
-        help='Run ID for this run (if None, will auto generate)')
+        default=get_default_id(),
+        help='Run ID for this run (if None, will auto generate)'
+)
 
     args = parser.parse_args()
 
-    run_id = f"autogen_{str(uuid4())}" if args.run_id is None else args.run_id
+    return parser.parse_args()
 
-    ws = get_ws(args.workspace)
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    # Workspace to store all results
+    ws = get_init_ws(args.workspace)
 
     # Create datasets
-    train_version = args.train_version if args.train_version is not None else \
-        f"autogen_{str(uuid4())}"
     ds_train = metadata.DataSet(
         uri=args.train_uri,
         name="training-data",
-        version=train_version,
+        version=args.train_version,
         workspace=ws.name,
     )
 
-    score_version = args.score_version if args.score_version is not None else \
-        f"autogen_{str(uuid4())}"
     ds_score = metadata.DataSet(
         uri=args.score_uri,
         name="scoring-data",
-        version=score_version,
+        version=args.score_version,
         workspace=ws.name,
     )
 
     # Create model
-    if args.params_file is not None:
-        with open(args.params_file, 'r') as fin:
-            params = yaml.safe_load(fin)
-        model_type = params.get('model_type', None)
-        version = params.get('version', run_id)
-        training_framework = params.get('training_framework', None)
-
-    else:
-        params = None
-        model_type = None
-        version = None
-        training_framework = None
+    params, model_type, version, training_framework = init_params_file(args.params_file)
 
     model = metadata.Model(
         name=f"model",
@@ -143,9 +159,10 @@ if __name__ == "__main__":
     else:
         metrics_values = None
 
+    # TODO: need to expose the metrics_values in the kubeflow artifact explorer.  Should put them somewhere else (as is, they don't show up in explorer)
     metrics = metadata.Metrics(
         uri=args.metrics_uri,
-        name=f"scoring-metrics-{run_id}",
+        name=f"scoring-metrics-{args.run_id}",
         data_set_id=str(ds_score.id),
         model_id=str(model.id),
         metrics_type=metadata.Metrics.VALIDATION,
@@ -154,7 +171,8 @@ if __name__ == "__main__":
 
     # Attach artifacts to training run/execution
     # TODO: Use run_id here instead of timestamp?
-    now = datetime.utcnow().isoformat("T")
+    execution_id = datetime.utcnow().isoformat("T")
+    # execution_id = run_id
 
 #     # Not sure what the runs are for...  Maybe an optional grouping?
 #     # They show up as metadata on the execution
@@ -163,14 +181,25 @@ if __name__ == "__main__":
 #         workspace=ws,
 #         name="training-run-{now}",
 #     )
+    r = None
 
-    ex = metadata.Execution(
-        name=f"training-execution-{now}",  # unique name
+    # Log training metadata to an execution
+    ex_train = metadata.Execution(
+        name=f"training-execution-{execution_id}",  # unique name
         workspace=ws,
-        # run=r,
+        run=r,
     )
 
-    # Log all metadata
-    ex.log_input(ds_train)
-    ex.log_output(model)
-    ex.log_output(metrics)
+    ex_train.log_input(ds_train)
+    ex_train.log_output(model)
+    
+    # Log scoring metadata to an execution
+    ex_score = metadata.Execution(
+        name=f"scoring-execution-{execution_id}",  # unique name
+        workspace=ws,
+        run=r,
+    )
+
+    ex_score.log_input(ds_score)
+    ex_score.log_input(model)
+    ex_score.log_output(metrics)

@@ -6,6 +6,7 @@ inputs:
 - {name: Minio source, type: String, description: 'Minio source location in format <bucket>/<location_in_bucket>'}
 outputs: 
 - {name: Local destination, type: String}
+- {name: md5sum, type: String, description: 'A combined md5sum of all data returned'}
 implementation:
   container:
     image: minio/mc
@@ -17,8 +18,11 @@ implementation:
         mkdir -p "$(dirname "$5")"
         mc config host add my_minio $0 $1 $2
         mc cp my_minio/$3 $4
+        # Use find in case we retrieved a directory - this gets all files in the dir
+        find $4 -type f -exec md5sum {} \; | sort -k 2 | md5sum | awk '{print $1}' > $5
     - {inputValue: Minio URL}
     - {inputValue: Minio access key}
     - {inputValue: Minio secret key}
     - {inputValue: Minio source}
     - {outputPath: Local destination}
+    - {outputPath: md5sum}
