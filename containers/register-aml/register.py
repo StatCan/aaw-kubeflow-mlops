@@ -7,6 +7,8 @@ from azureml.core import Workspace
 from azureml.core.model import Model
 from azureml.core.authentication import ServicePrincipalAuthentication
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
 
 def info(msg, char="#", width=75):
     print("")

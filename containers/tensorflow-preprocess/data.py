@@ -6,6 +6,8 @@ from pathlib2 import Path
 import wget
 import tensorflow as tf
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
 
 def check_dir(path):
     if not os.path.exists(path):

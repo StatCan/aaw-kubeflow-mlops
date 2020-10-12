@@ -1,5 +1,8 @@
 import time
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
+
 argument_one = getArgument("argument_one")  # noqa: F821, E501
 argument_two = getArgument("argument_two")  # noqa: F821, E501
 

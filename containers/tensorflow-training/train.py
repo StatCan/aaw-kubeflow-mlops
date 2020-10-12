@@ -15,6 +15,8 @@ import pandas as pd
 import mlflow
 import mlflow.tensorflow
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
 
 def info(msg, char="#", width=75):
     print("")

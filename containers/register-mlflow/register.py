@@ -3,6 +3,8 @@ import mlflow
 from mlflow.entities import ViewType
 import argparse
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
 
 client = MlflowClient()
 

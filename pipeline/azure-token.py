@@ -1,6 +1,8 @@
 import argparse
 from utils.auth.azure import get_access_token
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
 
 def main():
     # Obtain an authentication token from Azure AD

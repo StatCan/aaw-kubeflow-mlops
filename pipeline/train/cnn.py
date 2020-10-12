@@ -8,6 +8,9 @@ import os
 from kubernetes.client.models import V1EnvVar
 from utils.kubernetes.secret import use_databricks_secret, use_azstorage_secret  # noqa: E501
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
+
 TRAIN_START_EVENT = "Training Started"
 TRAIN_FINISH_EVENT = "Training Finished"
 

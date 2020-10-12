@@ -5,6 +5,9 @@ import kfp.compiler as compiler
 import json
 import os
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
+
 TRAIN_START_EVENT = "Training Started"
 TRAIN_FINISH_EVENT = "Training Finished"
 

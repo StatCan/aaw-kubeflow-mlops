@@ -8,8 +8,8 @@ from gh_actions_client import get_gh_actions_client
 # It knows how to build an event message and knows how to communicate
 # with the orchestrator. Potentially it may gather additional information
 # for the event payload. Currently it sends the payload as comes from KFP.
+# Initially derived from https://github.com/kaizentm/kubemlops
 
-# TODO: Authenticate as Git Hub App
 
 PORT = 8080
 

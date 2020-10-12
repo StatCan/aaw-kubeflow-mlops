@@ -7,6 +7,8 @@ from PIL import Image
 import tensorflow as tf
 from flask import Flask, request
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
 
 application = Flask(__name__)
 

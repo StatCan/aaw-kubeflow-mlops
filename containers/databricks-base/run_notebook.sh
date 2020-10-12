@@ -1,4 +1,5 @@
 #!/bin/bash
+# Initially derived from https://github.com/kaizentm/kubemlops
 
 while getopts "r:p:" option;
     do

@@ -5,6 +5,8 @@ from datetime import datetime
 from uuid import uuid4
 import json
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
 
 def info(msg, char="#", width=75):
     print("")

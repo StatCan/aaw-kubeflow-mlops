@@ -16,3 +16,7 @@ operations['register mlflow'] = dsl.ContainerOp(
     ]
 ).apply(use_azure_secret()).add_env_variable(V1EnvVar(name="MLFLOW_TRACKING_URI", value=mlflow_url))
 ```
+
+## Acknowledgements
+
+Extended with code and lessons learnt from the amazing work done by the Kaizen Team over at [KaizenTM](https://github.com/kaizentm/kubemlops)

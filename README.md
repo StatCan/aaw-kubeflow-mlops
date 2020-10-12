@@ -39,4 +39,4 @@ The current pipelines that have been created against the pluggable components ar
 
 ## Acknowledgements
 
-Extended from the amazing work done by the Kaizen Team over at [KaizenTM](https://github.com/kaizentm/kubemlops)
+Extended with code and lessons learnt from the amazing work done by the Kaizen Team over at [KaizenTM](https://github.com/kaizentm/kubemlops)

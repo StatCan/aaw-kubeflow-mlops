@@ -1,5 +1,7 @@
 import adal
 
+# Initially derived from https://github.com/kaizentm/kubemlops
+
 
 def get_access_token(tenant, clientId, client_secret, audience):
     authorityHostUrl = "https://login.microsoftonline.com"

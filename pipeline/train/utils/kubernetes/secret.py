@@ -1,3 +1,6 @@
+# Initially derived from https://github.com/kaizentm/kubemlops
+
+
 def use_databricks_secret(secret_name='databricks-secret'):
     def _use_databricks_secret(task):
         from kubernetes import client as k8s_client
