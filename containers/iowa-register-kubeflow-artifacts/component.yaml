@@ -24,7 +24,7 @@ implementation:
   container:
     image: not.a.real.image/iowa-register-kubeflow-artifacts:latest
     command: [
-        'bash', '/scripts/register.py',
+        'python', '/scripts/register.py',
                   '--workspace', {inputValue: workspace},
                   '--run_id', {inputValue: run_id},
                   '--model_uri', {inputValue: model_uri},

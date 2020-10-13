@@ -1,13 +1,16 @@
+#!/usr/bin/env python3
+
 import argparse
 from kubeflow.metadata import metadata
 from uuid import uuid4
 from datetime import datetime
 import yaml
 
+###############################################################################
 # # Sample test command:
 # > local_copy_of_metrics_to_add_in_metadata.yaml \
-#     && echo "accuracy: 0.75" >> local_copy_of_metrics_to_add_in_metadata.yaml \
-#     && echo "precision: 0.75" >> local_copy_of_metrics_to_add_in_metadata.yaml
+#     && echo "accuracy: 0.75" >> local_copy_of_metrics_to_add_in_metadata.yaml \  # noqa: E501
+#     && echo "precision: 0.75" >> local_copy_of_metrics_to_add_in_metadata.yaml  # noqa: E501
 # MODEL_ID=$RANDOM  # Random ID for demo so model is new in lineage explorer
 # echo "Logging model under unique_id $MODEL_ID"
 # python register.py \
@@ -35,10 +38,12 @@ import yaml
 
 # TODO: Make a demo showing how to use this?
 # * Is this covered by the jupyter-notebooks demo?
-# * Could have gif/video exploring the explorer.  
-# * highlight how in the artifact screen things that are reuses of things (say referencing past training data) show without timestamp, etc.  
+# * Could have gif/video exploring the explorer.
+# * highlight how in the artifact screen things that are reuses of things (say
+#   referencing past training data) show without timestamp, etc.
 
 DEFAULT_WORKSPACE_NAME = "iowa-train"
+
 
 def get_init_ws(workspace, description="", labels=None):  # noqa: E501
     """
@@ -59,8 +64,10 @@ def get_init_ws(workspace, description="", labels=None):  # noqa: E501
         labels=labels)
     return ws
 
+
 def get_default_id():
     return f"autogen_{str(uuid4())}"
+
 
 def init_params_file(params_file):
     if args.params_file is not None:
@@ -75,6 +82,7 @@ def init_params_file(params_file):
         version = None
         training_framework = None
     return params, model_type, version, training_framework
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Log pipeline artifacts to "
@@ -112,9 +120,7 @@ def parse_args():
         '-r', '--run_id',
         default=get_default_id(),
         help='Run ID for this run (if None, will auto generate)'
-)
-
-    args = parser.parse_args()
+    )
 
     return parser.parse_args()
 
@@ -141,7 +147,9 @@ if __name__ == "__main__":
     )
 
     # Create model
-    params, model_type, version, training_framework = init_params_file(args.params_file)
+    params, model_type, version, training_framework = init_params_file(
+        args.params_file
+        )
 
     model = metadata.Model(
         name=f"model",
@@ -192,7 +200,7 @@ if __name__ == "__main__":
 
     ex_train.log_input(ds_train)
     ex_train.log_output(model)
-    
+
     # Log scoring metadata to an execution
     ex_score = metadata.Execution(
         name=f"scoring-execution-{execution_id}",  # unique name
