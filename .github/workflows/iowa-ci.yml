@@ -99,7 +99,7 @@ jobs:
       - name: Get PR number if not PR comment
         if: needs.issue_comment_context.outputs.is_pr_comment != true
         run: |
-        echo "pr_number=${{ github.event.number }}" >> $GITHUB_ENV
+          echo "pr_number=${{ github.event.number }}" >> $GITHUB_ENV
 
   code_quality_checks:
     runs-on: ubuntu-latest
