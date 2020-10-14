@@ -71,12 +71,12 @@ jobs:
         run: |
           event_ref="+refs/pull/${{ github.event.issue.number }}/merge"
           echo "Writing $event_ref to environment variable"
-          echo "::set-output name=event_ref::$event_ref"
+          echo "event_ref=$event_ref" >> $GITHUB_ENV
       - name: Get event ref if this is not an issue_comment
         if: github.event_name != 'issue_comment'
         run: |
           echo "Writing ${{ github.ref }} to environment variable"
-          echo "::set-env name=event_ref::${{ github.ref }}"
+          echo "event_ref=${{ github.ref }}" >> $GITHUB_ENV
       # If we are acting for a comment on a PR, the comment's default checkout will be from master 
       # not from the PR's commit. Check out the PR's commit
       - name: Checkout PR code
@@ -94,11 +94,12 @@ jobs:
       - name: Get PR number if PR comment
         if: needs.issue_comment_context.outputs.is_pr_comment == true
         run: |
-          echo ::set-env name=pr_number::${{ needs.issue_comment_context.outputs.pr_number }}
+          echo "pr_number=${{ needs.issue_comment_context.outputs.pr_number }}" >> $GITHUB_ENV
+
       - name: Get PR number if not PR comment
         if: needs.issue_comment_context.outputs.is_pr_comment != true
         run: |
-          echo ::set-env name=pr_number::${{ github.event.number }}
+        echo "pr_number=${{ github.event.number }}" >> $GITHUB_ENV
 
   code_quality_checks:
     runs-on: ubuntu-latest
