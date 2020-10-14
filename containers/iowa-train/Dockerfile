@@ -6,7 +6,6 @@ RUN pip install -r /scripts/requirements.txt && \
     ipython kernel install --user
 
 COPY train.ipynb /scripts/train.ipynb
-COPY train.sh /scripts/train.sh
 
 # COPY data_train.csv data_train.csv
 # For local test, mount data as a volume
