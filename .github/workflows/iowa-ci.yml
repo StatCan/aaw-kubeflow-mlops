@@ -265,6 +265,7 @@ jobs:
 #          KFP_PIPELINE_NAME: ${{ secrets.KFP_PIPELINE_NAME }}
         env:
           KFP_PIPELINE_NAME: iowa-train
+          KFMD_WORKSPACE: iowa-train
           RUN_ID: ${{ github.run_id }}
         run: |
           export PIPELINE_ID=$(python ../publish.py --run_id $RUN_ID \
@@ -289,7 +290,8 @@ jobs:
           python run_training_pipeline.py \
             --kfp_host ${{ secrets.KFP_HOST }} \
             --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
-            --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
+            --kf_metadata_workspace $KFMD_WORKSPACE
+            --run_name "$KFP_PIPELINE_NAME" \
             --tenant ${{ secrets.tenant }} \
             --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
             --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \

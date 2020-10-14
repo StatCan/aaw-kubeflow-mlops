@@ -41,6 +41,13 @@ def main():
 #     )
 
     parser.add_argument(
+        "--kf_metadata_workspace",
+        type=str,
+        required=True,
+        help="Kubeflow Metadata Workspace name"
+    )
+
+    parser.add_argument(
         "--pipeline_id",
         type=str,
         required=True,
