@@ -23,11 +23,9 @@ COPY train.sh /scripts/train.sh
 # 	 ]
 
 ENTRYPOINT [ "papermill"]
-CMD [
-      "--parameters", "OUTPUT_MODEL_FILENAME", "model.joblib",
-      "--parameters", "OUTPUT_PARAMS_FILENAME", "params.yaml",
-      "--parameters", "DATA_TRAIN", "data_train.csv",
-      "--parameters", "SVM_GAMMA", "0.1",
-      "--parameters", "SVM_C", "100.",
-      "train.ipynb", "complete.ipynb"
-]
+CMD [ "--parameters", "OUTPUT_MODEL_FILENAME", "model.joblib", \
+      "--parameters", "OUTPUT_PARAMS_FILENAME", "params.yaml", \
+      "--parameters", "DATA_TRAIN", "data_train.csv", \
+      "--parameters", "SVM_GAMMA", "0.1", \
+      "--parameters", "SVM_C", "100.", \
+      "train.ipynb", "complete.ipynb" ]
