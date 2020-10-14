@@ -1,32 +1,52 @@
-name: Train
+# Modified from: 
+# https://raw.githubusercontent.com/kubeflow/pipelines/4ebce5f643b6af5639053ea7eaed52b02bf7e928/components/notebooks/Run_notebook_using_papermill/component.yaml
+# This could be made more generic by 
+#   * accepting a JSON array of parameters (like the above ex) rather than gamma/c
+#   * accepting the notebook to run / packages to install as args
+# But that would require the notebook.ipynb file to be centrally located somewhere 
+# that can be downloaded by an upstream op.  Could work, but how to do this with CI?
+name: Run Model Training Notebook
+description: |
+  Run a Jupyter notebook for model training using papermill, accepting csv data for training and .
 inputs:
-- {name: data_train, type: String}
-- {name: svm_gamma, type: Float}
-- {name: svm_c, type: Float}
-
+- {name: data_train, optional: true, description: 'Training data CSV file'}
+- {name: svm_gamma, type: Float, description: 'SVM gamma parameter'}
+- {name: svm_c, type: Float, description: 'SVM C parameter'}
 outputs:
-- {name: model}
-- {name: completed_notebook}
-- {name: params}
-
-# Use a fake image name for now.  This is a template component that we can reuse later
-# by loading it then doing a 
-# def use_image(image_name):
-#   def _use_image(task):
-#     task.image = image_name
-#     return task
-# instanced_op_task.apply(use_image(my_image_name))
-#
-# Could we just leave image out entirely?
+- {name: model, description: 'Trained model (eg: joblib file)'}
+- {name: parameters, description: 'YAML file of parameters used for training'}
+- {name: notebook, description: 'Output Notebook after training is complete'}
 implementation:
   container:
-    image: not.a.real.image/iowa-train:latest
-    command: [
-      'bash', '/scripts/train.sh', '--notebook', '/scripts/train.ipynb',
-      '--output_notebook', {outputPath: completed_notebook},
-      '--data', {inputPath: data_train},
-      '--output_model', {outputPath: model},
-      '--output_params', {outputPath: params},
-      '--svm_gamma', {inputValue: svm_gamma},
-      '--svm_c', {inputValue: svm_c}
-    ]
+    image: python:3.7
+    command:
+    - sh
+    - -exc
+    - |
+      NOTEBOOK="/scripts/train.ipynb"
+      
+      OUTPUT_NOTEBOOK_PATH="$0"
+      OUTPUT_MODEL_FILENAME="$1"
+      OUTPUT_PARAMS_FILENAME="$2"
+      DATA_TRAIN="$3"
+      SVM_GAMMA="$4"
+      SVM_C="$5"
+
+      mkdir -p "$(dirname "$OUTPUT_NOTEBOOK_PATH")"
+      mkdir -p "$(dirname "$OUTPUT_MODEL_FILENAME")"
+      mkdir -p "$(dirname "$OUTPUT_PARAMS_FILENAME")"
+
+      # Running the notebook using papermill
+      papermill --parameters OUTPUT_MODEL_FILENAME "$OUTPUT_MODEL_FILENAME" \
+                --parameters OUTPUT_PARAMS_FILENAME "$OUTPUT_PARAMS_FILENAME" \
+                --parameters DATA_TRAIN "$DATA_TRAIN" \
+                --parameters SVM_GAMMA "$SVM_GAMMA" \ 
+                --parameters SVM_C "$SVM_C" \
+                "$input_notebook_path" "$OUTPUT_NOTEBOOK_PATH"
+      
+    - {outputPath: notebook}
+    - {outputPath: model}
+    - {outputPath: parameters}
+    - {outputPath: data_train}
+    - {inputValue: svm_gamma}
+    - {inputValue: svm_c}

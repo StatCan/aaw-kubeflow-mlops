@@ -22,10 +22,12 @@ COPY train.sh /scripts/train.sh
 # 	 "-p",  "svm_c",  "100" \
 # 	 ]
 
-ENTRYPOINT [ "bash", "/scripts/train.sh", "--notebook", "/scripts/train.ipynb" ]
-CMD ["--output_notebook", "complete.ipynb", \
-	 "--data",  "data_train.csv", \
-	 "--output_model",  "model.joblib", \
-	 "--svm_gamma",  "0.1", \
-	 "--svm_c",  "100" \
-	 ]
+ENTRYPOINT [ "papermill"]
+CMD [
+      "--parameters", "OUTPUT_MODEL_FILENAME", "model.joblib",
+      "--parameters", "OUTPUT_PARAMS_FILENAME", "params.yaml",
+      "--parameters", "DATA_TRAIN", "data_train.csv",
+      "--parameters", "SVM_GAMMA", "0.1",
+      "--parameters", "SVM_C", "100.",
+      "train.ipynb", "complete.ipynb"
+]
