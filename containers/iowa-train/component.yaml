@@ -23,16 +23,16 @@ implementation:
     - sh
     - -exc
     - |
-      NOTEBOOK="/scripts/train.ipynb"
+      NOTEBOOK_FILENAME="/scripts/train.ipynb"
       
-      OUTPUT_NOTEBOOK_PATH="$0"
+      OUTPUT_NOTEBOOK_FILENAME="$0"
       OUTPUT_MODEL_FILENAME="$1"
       OUTPUT_PARAMS_FILENAME="$2"
       DATA_TRAIN="$3"
       SVM_GAMMA="$4"
       SVM_C="$5"
 
-      mkdir -p "$(dirname "$OUTPUT_NOTEBOOK_PATH")"
+      mkdir -p "$(dirname "$OUTPUT_NOTEBOOK_FILENAME")"
       mkdir -p "$(dirname "$OUTPUT_MODEL_FILENAME")"
       mkdir -p "$(dirname "$OUTPUT_PARAMS_FILENAME")"
 
@@ -40,13 +40,13 @@ implementation:
       papermill --parameters OUTPUT_MODEL_FILENAME "$OUTPUT_MODEL_FILENAME" \
                 --parameters OUTPUT_PARAMS_FILENAME "$OUTPUT_PARAMS_FILENAME" \
                 --parameters DATA_TRAIN "$DATA_TRAIN" \
-                --parameters SVM_GAMMA "$SVM_GAMMA" \ 
+                --parameters SVM_GAMMA "$SVM_GAMMA" \
                 --parameters SVM_C "$SVM_C" \
-                "$input_notebook_path" "$OUTPUT_NOTEBOOK_PATH"
+                "$NOTEBOOK_FILENAME" "$OUTPUT_NOTEBOOK_FILENAME"
       
     - {outputPath: notebook}
     - {outputPath: model}
     - {outputPath: parameters}
-    - {outputPath: data_train}
+    - {inputPath: data_train}
     - {inputValue: svm_gamma}
     - {inputValue: svm_c}

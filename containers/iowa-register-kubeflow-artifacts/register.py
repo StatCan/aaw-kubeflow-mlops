@@ -167,8 +167,9 @@ if __name__ == "__main__":
     else:
         metrics_values = None
 
-    # TODO: need to expose the metrics_values in the kubeflow artifact explorer.
-    # Should put them somewhere else (as is, they don't show up in explorer)
+    # TODO: need to expose the metrics_values in the kubeflow artifact 
+    # explorer. Should put them somewhere else (as is, they don't show
+    # up in explorer)
     metrics = metadata.Metrics(
         uri=args.metrics_uri,
         name=f"scoring-metrics-{args.run_id}",
