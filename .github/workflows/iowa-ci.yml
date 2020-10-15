@@ -215,7 +215,10 @@ jobs:
     needs: [git_context, issue_comment_context, build_images]
     env:
       TRAINING_PIPELINE_FILE: build_training_pipeline.tar.gz
-    steps:
+      KFP_PIPELINE_NAME: iowa-train
+      KFMD_WORKSPACE: iowa-train
+      RUN_ID: ${{ github.run_id }}    
+      steps:
       - uses: actions/checkout@v2
         with:
           # I think this is equivalent to doing 
@@ -263,10 +266,6 @@ jobs:
         working-directory: pipeline/iowa-train
         # TODO: Better as a parameter?
 #          KFP_PIPELINE_NAME: ${{ secrets.KFP_PIPELINE_NAME }}
-        env:
-          KFP_PIPELINE_NAME: iowa-train
-          KFMD_WORKSPACE: iowa-train
-          RUN_ID: ${{ github.run_id }}
         run: |
           export PIPELINE_ID=$(python ../publish.py --run_id $RUN_ID \
                                                     --pipeline_name "$KFP_PIPELINE_NAME" \
