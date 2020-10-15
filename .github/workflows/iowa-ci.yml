@@ -234,13 +234,15 @@ jobs:
     # Use dependencies from a pinned KFP implementation.  Needs to be updated if that gets updated,
     # but pinning prevents this from changing without us realizing
     - name: Install Python dependencies (kfp)
-      run: |
-        pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
+      # was: pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
+    run: |
+      pip3 install kfp==1.0.0
 
-    # This gets touchy about nbconvert versions.  For now just hard coding this install.  
+      # This gets touchy about nbconvert versions.  For now just hard coding this install.  
     # Don't want to do a --upgrade -r requirements.txt because that will upgrade kfp also
     # Maybe move above kfp dependency as pinned dependency into this requirements.txt
-
+    # Unlike here, the papermill kfp component doesn't need to install ipython kernel.  
+    # How does it avoid that?
     - name: Install Python papermill
       working-directory: pipeline/iowa-train
       run: |
@@ -251,9 +253,7 @@ jobs:
       working-directory: pipeline/iowa-train
       run: |
         pr_number="${{ needs.git_context.outputs.pr_number }}"
-        echo pr_number = "$pr_number"
         event_ref="${{ needs.git_context.outputs.event_ref }}"
-        echo event_ref = "$event_ref"
         papermill build_training_pipeline.ipynb completed.ipynb \
                   -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }} \
                   -p param_file params.yml \
