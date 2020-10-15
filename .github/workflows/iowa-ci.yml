@@ -269,15 +269,16 @@ jobs:
 #          KFP_PIPELINE_NAME: ${{ secrets.KFP_PIPELINE_NAME }}
       # capturing pipeline_id this way makes it really hard to debug.  
       # If we have errors, they get supressed and don't show in gh action log
+      # DEBUG: INTENTIONALLY BROKEN FOR TESTING.  Should fail and write to output in gh action log
       run: |
-        export PIPELINE_ID=$(python ../publish.py --run_id ${{ env.RUN_ID }} \
+        PIPELINE_ID=$(python ../publish.py --run_id  \
                                                   --pipeline_name ${{ env.KFP_PIPELINE_NAME }} \
                                                   --kfp_host ${{ secrets.KFP_HOST }} \
                                                   --tenant ${{ secrets.tenant }} \
                                                   --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
                                                   --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                                                   --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                                                  --pipeline_file_path ${{ env.TRAINING_PIPELINE_FILE }} 2>&1 >/dev/null)
+                                                  --pipeline_file_path ${{ env.TRAINING_PIPELINE_FILE }})
         echo "pipeline id: $PIPELINE_ID"
         echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
 
