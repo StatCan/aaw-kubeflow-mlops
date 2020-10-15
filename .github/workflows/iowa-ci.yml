@@ -235,8 +235,8 @@ jobs:
     # but pinning prevents this from changing without us realizing
     - name: Install Python dependencies (kfp)
       # was: pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
-    run: |
-      pip3 install kfp==1.0.0
+      run: |
+        pip3 install kfp==1.0.0
 
     # This gets touchy about nbconvert versions.  For now just hard coding this install.  
     # Don't want to do a --upgrade -r requirements.txt because that will upgrade kfp also
