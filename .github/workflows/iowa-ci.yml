@@ -269,7 +269,7 @@ jobs:
 #          KFP_PIPELINE_NAME: ${{ secrets.KFP_PIPELINE_NAME }}
       run: |
         export PIPELINE_ID=$(python ../publish.py --run_id $RUN_ID \
-                                                  --pipeline_name "$KFP_PIPELINE_NAME" \
+                                                  --pipeline_name ${{ env.KFP_PIPELINE_NAME }} \
                                                   --kfp_host ${{ secrets.KFP_HOST }} \
                                                   --tenant ${{ secrets.tenant }} \
                                                   --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
