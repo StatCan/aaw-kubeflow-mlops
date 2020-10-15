@@ -289,7 +289,7 @@ jobs:
         python run_training_pipeline.py \
           --kfp_host ${{ secrets.KFP_HOST }} \
           --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
-          --kf_metadata_workspace $KFMD_WORKSPACE
+          --kf_metadata_workspace $KFMD_WORKSPACE \
           --run_name "$KFP_PIPELINE_NAME" \
           --tenant ${{ secrets.tenant }} \
           --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
