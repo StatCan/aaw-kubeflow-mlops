@@ -238,7 +238,7 @@ jobs:
     run: |
       pip3 install kfp==1.0.0
 
-      # This gets touchy about nbconvert versions.  For now just hard coding this install.  
+    # This gets touchy about nbconvert versions.  For now just hard coding this install.  
     # Don't want to do a --upgrade -r requirements.txt because that will upgrade kfp also
     # Maybe move above kfp dependency as pinned dependency into this requirements.txt
     # Unlike here, the papermill kfp component doesn't need to install ipython kernel.  
