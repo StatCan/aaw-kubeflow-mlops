@@ -24,8 +24,8 @@ jobs:
     env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
     steps:
-      - name: Dump GitHub context
-        run: echo "$GITHUB_CONTEXT"
+    - name: Dump GitHub context
+      run: echo "$GITHUB_CONTEXT"
 
   issue_comment_context:
     runs-on: ubuntu-latest
@@ -34,17 +34,17 @@ jobs:
       pr_number: ${{ steps.get_pr_number.outputs.pr_number }}
     steps:
       # If this doesn't fire, the result will be empty and thus evaluate to false
-      - name: Test if PR Comment
-        if: github.event_name == 'issue_comment' && github.event.issue.pull_request != 0
-        id: is_pr_comment
-        run: echo "::set-output name=boolean::true"
-      - name: Get PR Number
-        id: get_pr_number
-        if: ${{ steps.is_pr_comment.outputs.boolean }}
-        run: |
-          url=${{ github.event.issue.pull_request.html_url }}
-          pr_number=${url##*/}
-          echo "::set-output name=pr_number::$pr_number"
+    - name: Test if PR Comment
+      if: github.event_name == 'issue_comment' && github.event.issue.pull_request != 0
+      id: is_pr_comment
+      run: echo "::set-output name=boolean::true"
+    - name: Get PR Number
+      id: get_pr_number
+      if: ${{ steps.is_pr_comment.outputs.boolean }}
+      run: |
+        url=${{ github.event.issue.pull_request.html_url }}
+        pr_number=${url##*/}
+        echo "::set-output name=pr_number::$pr_number"
 
   # TODO: Add a trigger_context job here that centralizes all triggers?  
   # So any issue_comment /trigger goes here, then later jobs need this and use its outputs
@@ -63,64 +63,64 @@ jobs:
       # If not a PR, this will be blank (eg: if a push/merge to a watched branch)
       pr_number: ${{ env.pr_number }}
     steps:
-      # todo: I think I can just checkout once below after context is determined?
-      - uses: actions/checkout@v2
-      - name: Get event ref if this is an issue_comment
-        id: get_event_ref
-        if: github.event_name == 'issue_comment'
-        run: |
-          event_ref="+refs/pull/${{ github.event.issue.number }}/merge"
-          echo "Writing $event_ref to environment variable"
-          echo "event_ref=$event_ref" >> $GITHUB_ENV
-      - name: Get event ref if this is not an issue_comment
-        if: github.event_name != 'issue_comment'
-        run: |
-          echo "Writing ${{ github.ref }} to environment variable"
-          echo "event_ref=${{ github.ref }}" >> $GITHUB_ENV
-      # If we are acting for a comment on a PR, the comment's default checkout will be from master 
-      # not from the PR's commit. Check out the PR's commit
-      - name: Checkout PR code
-        if: github.event_name == 'issue_comment'
-        run: |
-           git fetch origin ${{ env.event_ref }}
-           git checkout FETCH_HEAD
-      - name: Store event git SHA to output
-        id: get_git_sha
-        run: |
-          git_sha="$(git rev-parse HEAD)"
-          echo "Storing git SHA $git_sha to environment variable"
-          echo ::set-output name=event_git_sha::$git_sha
-      # Could also pull issue number from github.event.issue.number
-      - name: Get PR number if PR comment
-        if: needs.issue_comment_context.outputs.is_pr_comment == true
-        run: |
-          echo "pr_number=${{ needs.issue_comment_context.outputs.pr_number }}" >> $GITHUB_ENV
+    # todo: I think I can just checkout once below after context is determined?
+    - uses: actions/checkout@v2
+    - name: Get event ref if this is an issue_comment
+      id: get_event_ref
+      if: github.event_name == 'issue_comment'
+      run: |
+        event_ref="+refs/pull/${{ github.event.issue.number }}/merge"
+        echo "Writing $event_ref to environment variable"
+        echo "event_ref=$event_ref" >> $GITHUB_ENV
+    - name: Get event ref if this is not an issue_comment
+      if: github.event_name != 'issue_comment'
+      run: |
+        echo "Writing ${{ github.ref }} to environment variable"
+        echo "event_ref=${{ github.ref }}" >> $GITHUB_ENV
+    # If we are acting for a comment on a PR, the comment's default checkout will be from master 
+    # not from the PR's commit. Check out the PR's commit
+    - name: Checkout PR code
+      if: github.event_name == 'issue_comment'
+      run: |
+          git fetch origin ${{ env.event_ref }}
+          git checkout FETCH_HEAD
+    - name: Store event git SHA to output
+      id: get_git_sha
+      run: |
+        git_sha="$(git rev-parse HEAD)"
+        echo "Storing git SHA $git_sha to environment variable"
+        echo ::set-output name=event_git_sha::$git_sha
+    # Could also pull issue number from github.event.issue.number
+    - name: Get PR number if PR comment
+      if: needs.issue_comment_context.outputs.is_pr_comment == true
+      run: |
+        echo "pr_number=${{ needs.issue_comment_context.outputs.pr_number }}" >> $GITHUB_ENV
 
-      - name: Get PR number if not PR comment
-        if: needs.issue_comment_context.outputs.is_pr_comment != true
-        run: |
-          echo "pr_number=${{ github.event.number }}" >> $GITHUB_ENV
+    - name: Get PR number if not PR comment
+      if: needs.issue_comment_context.outputs.is_pr_comment != true
+      run: |
+        echo "pr_number=${{ github.event.number }}" >> $GITHUB_ENV
 
   code_quality_checks:
     runs-on: ubuntu-latest
     if: github.event_name != 'issue_comment'
     needs: [git_context]
     steps:
-      - uses: actions/checkout@v2
-        with:
-          # I think this is equivalent to doing 
-          #   git fetch origin ${{ ...event_ref }}
-          #   git checkout FETCH_HEAD
-          ref: ${{ needs.git_context.outputs.event_ref }}
-        env:
-          REPO: ${{ github.repository }}
-          PR_NUM: ${{ needs.git_context.outputs.pr_number }}
-      - uses: TrueBrain/actions-flake8@master
-        with:
-          path: "containers"
-      - uses: TrueBrain/actions-flake8@master
-        with:
-          path: "pipeline"
+    - uses: actions/checkout@v2
+      with:
+        # I think this is equivalent to doing 
+        #   git fetch origin ${{ ...event_ref }}
+        #   git checkout FETCH_HEAD
+        ref: ${{ needs.git_context.outputs.event_ref }}
+      env:
+        REPO: ${{ github.repository }}
+        PR_NUM: ${{ needs.git_context.outputs.pr_number }}
+    - uses: TrueBrain/actions-flake8@master
+      with:
+        path: "containers"
+    - uses: TrueBrain/actions-flake8@master
+      with:
+        path: "pipeline"
 
   build_images:
     runs-on: ubuntu-latest
@@ -132,80 +132,80 @@ jobs:
       training_image_url: ${{ steps.build_training_image.outputs.image_url }}
       scoring_image_url: ${{ steps.build_training_image.outputs.image_url }}
     steps:
-      - name: Build Register Kubeflow Artifacts Image
-        id: build_register_kubeflow_artifacts_image
-        # TODO DEBUG: Removed guard during testing
-        # if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
-        # DEBUG: Testing updated acr-task with image_url output
-        # uses: statcan/actions/acr-task@master
-        uses: ca-scribner/actions/acr-task@master
-        with:
-          service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
-          service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
-          tenant: ${{ secrets.TENANT }}
-          registry: ${{ env.ACR_REGISTRY }}
-          repository: ${{ env.ACR_REPOSITORY }}
-          repository_crds: ${{ secrets.REPOSITORY_CRDS }}
-          # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
-          # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
-          # and the task didn't catch that as bad
-          branch: ${{ needs.git_context.outputs.event_ref }}
-          tag: ${{ needs.git_context.outputs.event_git_sha }}
-          image: iowa-register-kubeflow-artifacts
-          folder: containers/iowa-register-kubeflow-artifacts
-      - name: Echo Register Kubeflow Artifacts Image Name
-        run: |
-          echo "Above step generated image: ${{ steps.build_register_kubeflow_artifacts_image.outputs.image_url }}" 
+    - name: Build Register Kubeflow Artifacts Image
+      id: build_register_kubeflow_artifacts_image
+      # TODO DEBUG: Removed guard during testing
+      # if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
+      # DEBUG: Testing updated acr-task with image_url output
+      # uses: statcan/actions/acr-task@master
+      uses: ca-scribner/actions/acr-task@master
+      with:
+        service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
+        service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
+        tenant: ${{ secrets.TENANT }}
+        registry: ${{ env.ACR_REGISTRY }}
+        repository: ${{ env.ACR_REPOSITORY }}
+        repository_crds: ${{ secrets.REPOSITORY_CRDS }}
+        # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
+        # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
+        # and the task didn't catch that as bad
+        branch: ${{ needs.git_context.outputs.event_ref }}
+        tag: ${{ needs.git_context.outputs.event_git_sha }}
+        image: iowa-register-kubeflow-artifacts
+        folder: containers/iowa-register-kubeflow-artifacts
+    - name: Echo Register Kubeflow Artifacts Image Name
+      run: |
+        echo "Above step generated image: ${{ steps.build_register_kubeflow_artifacts_image.outputs.image_url }}" 
 
-      - name: Build Training Image
-        id: build_training_image
-        # TODO DEBUG: Removed guard during testing
-        # if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
-        # DEBUG: Testing updated acr-task with image_url output
-        # uses: statcan/actions/acr-task@master
-        uses: ca-scribner/actions/acr-task@master
-        with:
-          service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
-          service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
-          tenant: ${{ secrets.TENANT }}
-          registry: ${{ env.ACR_REGISTRY }}
-          repository: ${{ env.ACR_REPOSITORY }}
-          repository_crds: ${{ secrets.REPOSITORY_CRDS }}
-          # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
-          # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
-          # and the task didn't catch that as bad
-          branch: ${{ needs.git_context.outputs.event_ref }}
-          tag: ${{ needs.git_context.outputs.event_git_sha }}
-          image: iowa-train
-          folder: containers/iowa-train
-      - name: Echo Training Image Name
-        run: |
-          echo "Above step generated training image: ${{ steps.build_training_image.outputs.image_url }}"
-      
-      - name: Build Scoring Image
-        id: build_scoring_image
-        # TODO DEBUG: Removed guard during testing
-        # if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
-        # DEBUG: Testing updated acr-task with image_url output
-        # uses: statcan/actions/acr-task@master
-        uses: ca-scribner/actions/acr-task@master
-        with:
-          service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
-          service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
-          tenant: ${{ secrets.TENANT }}
-          registry: ${{ env.ACR_REGISTRY }}
-          repository: ${{ env.ACR_REPOSITORY }}
-          repository_crds: ${{ secrets.REPOSITORY_CRDS }}
-          # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
-          # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
-          # and the task didn't catch that as bad
-          branch: ${{ needs.git_context.outputs.event_ref }}
-          tag: ${{ needs.git_context.outputs.event_git_sha }}
-          image: iowa-score
-          folder: containers/iowa-score
-      - name: Echo Scoring Image Name
-        run: |
-          echo "Above step generated image: ${{ steps.build_scoring_image.outputs.image_url }}" 
+    - name: Build Training Image
+      id: build_training_image
+      # TODO DEBUG: Removed guard during testing
+      # if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
+      # DEBUG: Testing updated acr-task with image_url output
+      # uses: statcan/actions/acr-task@master
+      uses: ca-scribner/actions/acr-task@master
+      with:
+        service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
+        service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
+        tenant: ${{ secrets.TENANT }}
+        registry: ${{ env.ACR_REGISTRY }}
+        repository: ${{ env.ACR_REPOSITORY }}
+        repository_crds: ${{ secrets.REPOSITORY_CRDS }}
+        # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
+        # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
+        # and the task didn't catch that as bad
+        branch: ${{ needs.git_context.outputs.event_ref }}
+        tag: ${{ needs.git_context.outputs.event_git_sha }}
+        image: iowa-train
+        folder: containers/iowa-train
+    - name: Echo Training Image Name
+      run: |
+        echo "Above step generated training image: ${{ steps.build_training_image.outputs.image_url }}"
+    
+    - name: Build Scoring Image
+      id: build_scoring_image
+      # TODO DEBUG: Removed guard during testing
+      # if: github.event_name == 'push' || contains(github.event.comment.body, '/build-images')
+      # DEBUG: Testing updated acr-task with image_url output
+      # uses: statcan/actions/acr-task@master
+      uses: ca-scribner/actions/acr-task@master
+      with:
+        service_principal: ${{ secrets.SERVICE_PRINCIPAL }}
+        service_principal_password: ${{ secrets.SERVICE_PRINCIPAL_PWD }}
+        tenant: ${{ secrets.TENANT }}
+        registry: ${{ env.ACR_REGISTRY }}
+        repository: ${{ env.ACR_REPOSITORY }}
+        repository_crds: ${{ secrets.REPOSITORY_CRDS }}
+        # If this is empty, it might still work?  If so, maybe update the task to be more clear about that
+        # I had a case where code_quality_checks.outputs.event_ref wasn't available so it just passed a blank
+        # and the task didn't catch that as bad
+        branch: ${{ needs.git_context.outputs.event_ref }}
+        tag: ${{ needs.git_context.outputs.event_git_sha }}
+        image: iowa-score
+        folder: containers/iowa-score
+    - name: Echo Scoring Image Name
+      run: |
+        echo "Above step generated image: ${{ steps.build_scoring_image.outputs.image_url }}" 
 
   build_kfp_pipeline:
     runs-on: ubuntu-latest
@@ -218,98 +218,98 @@ jobs:
       KFP_PIPELINE_NAME: iowa-train
       KFMD_WORKSPACE: iowa-train
       RUN_ID: ${{ github.run_id }}    
-      steps:
-      - uses: actions/checkout@v2
-        with:
-          # I think this is equivalent to doing 
-          #   git fetch origin ${{ ...event_ref }}
-          #   git checkout FETCH_HEAD
-          ref: ${{ needs.git_context.outputs.event_ref }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # I think this is equivalent to doing 
+        #   git fetch origin ${{ ...event_ref }}
+        #   git checkout FETCH_HEAD
+        ref: ${{ needs.git_context.outputs.event_ref }}
 
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
 
-      # Use dependencies from a pinned KFP implementation.  Needs to be updated if that gets updated,
-      # but pinning prevents this from changing without us realizing
-      - name: Install Python dependencies (kfp)
-        run: |
-          pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
+    # Use dependencies from a pinned KFP implementation.  Needs to be updated if that gets updated,
+    # but pinning prevents this from changing without us realizing
+    - name: Install Python dependencies (kfp)
+      run: |
+        pip3 install "git+https://github.com/statcan/pipelines@db46df74bb3d37092d440bb2eb62d9e90b403c81#egg=kfp&subdirectory=sdk/python" adal --upgrade
 
-      # This gets touchy about nbconvert versions.  For now just hard coding this install.  
-      # Don't want to do a --upgrade -r requirements.txt because that will upgrade kfp also
-      # Maybe move above kfp dependency as pinned dependency into this requirements.txt
+    # This gets touchy about nbconvert versions.  For now just hard coding this install.  
+    # Don't want to do a --upgrade -r requirements.txt because that will upgrade kfp also
+    # Maybe move above kfp dependency as pinned dependency into this requirements.txt
 
-      - name: Install Python papermill
-        working-directory: pipeline/iowa-train
-        run: |
-          pip3 install --upgrade papermill ipykernel
-          ipython kernel install --user
+    - name: Install Python papermill
+      working-directory: pipeline/iowa-train
+      run: |
+        pip3 install --upgrade papermill ipykernel
+        ipython kernel install --user
 
-      - name: Build Pipeline with Pinned Containers
-        working-directory: pipeline/iowa-train
-        run: |
-          pr_number="${{ needs.git_context.outputs.pr_number }}"
-          echo pr_number = "$pr_number"
-          event_ref="${{ needs.git_context.outputs.event_ref }}"
-          echo event_ref = "$event_ref"
-          papermill build_training_pipeline.ipynb completed.ipynb \
-                    -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }} \
-                    -p param_file params.yml \
-                    -p container_tag ${{ needs.git_context.outputs.event_git_sha }} \
-                    -p github_event_ref "${{ needs.git_context.outputs.event_ref }}" \
-                    -p pr_num "${{ needs.git_context.outputs.pr_number }}"
+    - name: Build Pipeline with Pinned Containers
+      working-directory: pipeline/iowa-train
+      run: |
+        pr_number="${{ needs.git_context.outputs.pr_number }}"
+        echo pr_number = "$pr_number"
+        event_ref="${{ needs.git_context.outputs.event_ref }}"
+        echo event_ref = "$event_ref"
+        papermill build_training_pipeline.ipynb completed.ipynb \
+                  -p output_pipeline_filename ${{ env.TRAINING_PIPELINE_FILE }} \
+                  -p param_file params.yml \
+                  -p container_tag ${{ needs.git_context.outputs.event_git_sha }} \
+                  -p github_event_ref "${{ needs.git_context.outputs.event_ref }}" \
+                  -p pr_num "${{ needs.git_context.outputs.pr_number }}"
 
-      - name: Publish/Upload KF Pipeline
-        id: publish_train_pipeline
-        working-directory: pipeline/iowa-train
-        # TODO: Better as a parameter?
+    - name: Publish/Upload KF Pipeline
+      id: publish_train_pipeline
+      working-directory: pipeline/iowa-train
+      # TODO: Better as a parameter?
 #          KFP_PIPELINE_NAME: ${{ secrets.KFP_PIPELINE_NAME }}
-        run: |
-          export PIPELINE_ID=$(python ../publish.py --run_id $RUN_ID \
-                                                    --pipeline_name "$KFP_PIPELINE_NAME" \
-                                                    --kfp_host ${{ secrets.KFP_HOST }} \
-                                                    --tenant ${{ secrets.tenant }} \
-                                                    --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
-                                                    --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
-                                                    --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-                                                    --pipeline_file_path ${{ env.TRAINING_PIPELINE_FILE }} 2>&1 >/dev/null)
-          echo "pipeline id: $PIPELINE_ID"
-          echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
+      run: |
+        export PIPELINE_ID=$(python ../publish.py --run_id $RUN_ID \
+                                                  --pipeline_name "$KFP_PIPELINE_NAME" \
+                                                  --kfp_host ${{ secrets.KFP_HOST }} \
+                                                  --tenant ${{ secrets.tenant }} \
+                                                  --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+                                                  --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+                                                  --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+                                                  --pipeline_file_path ${{ env.TRAINING_PIPELINE_FILE }} 2>&1 >/dev/null)
+        echo "pipeline id: $PIPELINE_ID"
+        echo "::set-output name=published_pipeline_id::$PIPELINE_ID"
 
-      - name: Run Training Pipeline
-        id: run_training_pipeline
-        working-directory: pipeline/iowa-train
-        # Removed while debugging:
-          # --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
-          # --workspace ${{ secrets.AML_WORKSPACE }} \
-        # TODO: Flexible dataset specs?  Or just define via pipeline?
-        run: |
-          python run_training_pipeline.py \
-            --kfp_host ${{ secrets.KFP_HOST }} \
-            --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
-            --kf_metadata_workspace $KFMD_WORKSPACE
-            --run_name "$KFP_PIPELINE_NAME" \
-            --tenant ${{ secrets.tenant }} \
-            --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
-            --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
-            --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
-            --data_train andrew-scribner/iowa/processed/train/2020-08-13_18:02:01_train.csv \
-            --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv | tee output.txt
-          run_id=$(grep "Run id:" output.txt | sed -E 's/^Run id: (.*)$/\1/')
-          echo Got run_id: $run_id
-          echo ::set-output name=run_id::$run_id
+    - name: Run Training Pipeline
+      id: run_training_pipeline
+      working-directory: pipeline/iowa-train
+      # Removed while debugging:
+        # --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
+        # --workspace ${{ secrets.AML_WORKSPACE }} \
+      # TODO: Flexible dataset specs?  Or just define via pipeline?
+      run: |
+        python run_training_pipeline.py \
+          --kfp_host ${{ secrets.KFP_HOST }} \
+          --pipeline_id ${{ steps.publish_train_pipeline.outputs.published_pipeline_id}} \
+          --kf_metadata_workspace $KFMD_WORKSPACE
+          --run_name "$KFP_PIPELINE_NAME" \
+          --tenant ${{ secrets.tenant }} \
+          --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
+          --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
+          --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+          --data_train andrew-scribner/iowa/processed/train/2020-08-13_18:02:01_train.csv \
+          --data_test andrew-scribner/iowa/processed/test/2020-08-13_18:02:01_test.csv | tee output.txt
+        run_id=$(grep "Run id:" output.txt | sed -E 's/^Run id: (.*)$/\1/')
+        echo Got run_id: $run_id
+        echo ::set-output name=run_id::$run_id
 
-      - name: Get run link
-        id: get_run_link
-        run: |
-          echo ::set-output name=run_link::"${{ secrets.KFP_DSHB }}/_/pipeline/#/runs/details/${{ steps.run_training_pipeline.outputs.run_id }}"
+    - name: Get run link
+      id: get_run_link
+      run: |
+        echo ::set-output name=run_link::"${{ secrets.KFP_DSHB }}/_/pipeline/#/runs/details/${{ steps.run_training_pipeline.outputs.run_id }}"
 
-      - uses: unsplash/comment-on-pr@v1.2.0
-        name: Post run link to thread using unsplash action
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          msg: 'Run link: <a href="${{ steps.get_run_link.outputs.run_link }}">here</a>'
-          check_for_duplicate_msg: false
+    - uses: unsplash/comment-on-pr@v1.2.0
+      name: Post run link to thread using unsplash action
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        msg: 'Run link: <a href="${{ steps.get_run_link.outputs.run_link }}">here</a>'
+        check_for_duplicate_msg: false
