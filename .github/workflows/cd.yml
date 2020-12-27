@@ -61,7 +61,8 @@ jobs:
                                                   --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
                                                   --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
                                                   --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }})
-        echo "::set-env name=JWT_TOKEN::$JWT_TOKEN"
+        echo "JWT_TOKEN=$JWT_TOKEN" >> $GITHUB_ENV
+
       working-directory: pipeline
 
     - name: Download model
@@ -69,7 +70,8 @@ jobs:
         cd $GITHUB_WORKSPACE/containers/seldon-score
         mlflow_run_id=$(curl -H "Authorization: Bearer ${JWT_TOKEN}" -d '{"experiment_ids":['$MLFLOW_EXPERIMENT'],"filter":"tags.external_run_id='\'''$RUN_ID''\''"}' ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/runs/search | jq -r '.runs[0].info.run_id')
         curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.h5&run_uuid='$mlflow_run_id > model.h5
-        echo "::set-env name=mlflow_run_id::$mlflow_run_id"
+        echo "mlflow_run_id=$mlflow_run_id" >> $GITHUB_ENV
+
       env:
         RUN_ID: ${{ steps.deh.outputs.RUN_ID }}
         MLFLOW_EXPERIMENT: ${{ secrets.MLFLOW_EXPERIMENT }}

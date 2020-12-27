@@ -26,10 +26,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: GetPRSHA
         if: github.event_name == 'issue_comment'
-        run: echo "::set-env name=event_sha::+refs/pull/${{ github.event.issue.number }}/merge"
+        run: echo "event_sha=+refs/pull/${{ github.event.issue.number }}/merge" >> $GITHUB_ENV
       - name: GetREFSHA
         if: github.event_name != 'issue_comment'
-        run: echo "::set-env name=event_sha::${{ github.ref }}"
+        run: echo "event_sha=${{ github.ref }}" >> $GITHUB_ENV
       - if: github.event_name == 'issue_comment'
         name: Checkout PR code
         run: |
@@ -185,7 +185,7 @@ jobs:
                                                           --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
                                                           --pipeline_file_path "train/cnn.py.tar.gz" 2>&1 >/dev/null)
           echo "pipeline id: $PIPELINE_ID"
-          echo "::set-env name=PUBLISHED_PIPELINE_ID::$PIPELINE_ID"
+          echo "PUBLISHED_PIPELINE_ID=$PUBLISHED_PIPELINE_ID" >> $GITHUB_ENV
         working-directory: pipeline
 
       - name: Upload artifact
