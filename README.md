@@ -6,7 +6,7 @@ The architecture of the sample is shown in the following diagram:
 
 ![Kubeflow MLOps Architecture Diagram](./docs/diagrams/kubeflow-mlops.png)
 
-The current pipelines that have been created against the pluggable components are:
+The current pipelines that have been created provide the following pluggable components:
 
 * [Default](pipeline/train/default.py)
 * [Convolutional Neural Network (CNN)](pipeline/train/cnn.py)
