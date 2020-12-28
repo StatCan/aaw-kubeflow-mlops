@@ -1,4 +1,4 @@
 Pillow
 pathlib2
 pandas
-mlflow
+mlflow==1.12.1
