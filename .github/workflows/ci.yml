@@ -180,12 +180,12 @@ jobs:
                                                           --pipeline_name "$KFP_PIPELINE_NAME" \
                                                           --kfp_host $KFP_HOST \
                                                           --tenant ${{ secrets.tenant }} \
-                                                          --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
-                                                          --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
-                                                          --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+                                                          --service_principal ${{ secrets.KFP_SERVICE_PRINCIPAL }} \
+                                                          --sp_secret ${{ secrets.KFP_SERVICE_PRINCIPAL_PWD }} \
+                                                          --sp_audience ${{ secrets.KFP_SERVICE_PRINCIPAL_AUDIENCE }} \
                                                           --pipeline_file_path "train/cnn.py.tar.gz" 2>&1 >/dev/null)
           echo "pipeline id: $PIPELINE_ID"
-          echo "PUBLISHED_PIPELINE_ID=$PUBLISHED_PIPELINE_ID" >> $GITHUB_ENV
+          echo "PUBLISHED_PIPELINE_ID=$PIPELINE_ID" >> $GITHUB_ENV
         working-directory: pipeline
 
       - name: Upload artifact
@@ -197,13 +197,14 @@ jobs:
       - name: Run Pipeline ID
         run: |
           python run.py --kfp_host ${{ secrets.KFP_HOST }} \
+                                  --namespace ${{ secrets.KFP_PIPELINE_NAMESPACE }} \
                                   --resource_group ${{ secrets.AML_RESOURCE_GROUP }} \
                                   --workspace ${{ secrets.AML_WORKSPACE }} \
                                   --pipeline_id $PUBLISHED_PIPELINE_ID \
                                   --run_name "${{ secrets.KFP_PIPELINE_NAME }}" \
                                   --tenant ${{ secrets.tenant }} \
-                                  --service_principal ${{ secrets.SERVICE_PRINCIPAL }} \
-                                  --sp_secret ${{ secrets.SERVICE_PRINCIPAL_PWD }} \
-                                  --sp_audience ${{ secrets.SERVICE_PRINCIPAL_AUDIENCE }} \
+                                  --service_principal ${{ secrets.KFP_SERVICE_PRINCIPAL }} \
+                                  --sp_secret ${{ secrets.KFP_SERVICE_PRINCIPAL_PWD }} \
+                                  --sp_audience ${{ secrets.KFP_SERVICE_PRINCIPAL_AUDIENCE }} \
                                   --datasets $DATASETS
         working-directory: pipeline

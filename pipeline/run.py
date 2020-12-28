@@ -10,7 +10,7 @@ def main():
     # With an authentication token provided by Azure AD
     #
     # Usage:
-    # python run.py --kfp_host <kfp_host> --resource_group <resource_group> --workspace <workspace> --pipeline_id <pipeline_id> --run_path <run_path> --experiment_name <experiment_name> --tenant <tenant> --service_principal <Service Principal> --sp_secret <Service Principal Secret> --sp_audience <Audience> --datasets <datasets>  # noqa: E501
+    # python run.py --kfp_host <kfp_host> --namespace <namespace> --resource_group <resource_group> --workspace <workspace> --pipeline_id <pipeline_id> --run_path <run_path> --experiment_name <experiment_name> --tenant <tenant> --service_principal <Service Principal> --sp_secret <Service Principal Secret> --sp_audience <Audience> --datasets <datasets>  # noqa: E501
 
     parser = argparse.ArgumentParser("run pipeline")
 
@@ -20,6 +20,13 @@ def main():
         required=False,
         default="http://localhost:8080/pipeline",
         help="KFP endpoint"
+    )
+
+    parser.add_argument(
+        "--namespace",
+        type=str,
+        required=True,
+        help="Namespace"
     )
 
     parser.add_argument(
@@ -96,7 +103,7 @@ def main():
     args = parser.parse_args()
     token = get_access_token(args.tenant, args.service_principal, args.sp_secret, args.sp_audience)  # noqa: E501
     client = kfp.Client(host=args.kfp_host, existing_token=token)
-    exp = client.get_experiment(experiment_name=args.experiment_name)  # noqa: E501
+    exp = client.get_experiment(experiment_name=args.experiment_name, namespace=args.namespace)  # noqa: E501
 
     pipeline_params = {}
     pipeline_params["resource_group"] = args.resource_group
