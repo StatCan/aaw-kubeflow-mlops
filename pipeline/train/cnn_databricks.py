@@ -6,7 +6,7 @@ from kfp.azure import use_azure_secret
 import json
 import os
 from kubernetes.client.models import V1EnvVar
-from utils.kubernetes.secret import use_azstorage_secret  # noqa: E501
+from utils.kubernetes.secret import use_databricks_secret, use_azstorage_secret  # noqa: E501
 
 # Initially derived from https://github.com/kaizentm/kubemlops
 
@@ -69,9 +69,18 @@ def cnn_train(
                               args=['-d',
                                     get_callback_payload(TRAIN_START_EVENT), callback_url])  # noqa: E501
 
+        operations['databricks data processing'] = dsl.ContainerOp(
+            name='databricks data processing',
+            init_containers=[start_callback],
+            image=image_repo_name + '/databricks-notebook:latest',
+            arguments=[
+                '-r', dsl.RUN_ID_PLACEHOLDER,
+                '-p', '{"argument_one":"param one","argument_two":"param two"}'
+            ]
+        ).apply(use_databricks_secret())
+
         operations['tensorflow preprocess'] = dsl.ContainerOp(
             name='tensorflow preprocess',
-            init_containers=[start_callback],
             image=image_repo_name + '/tensorflow-preprocess:latest',
             command=['python'],
             arguments=[
@@ -83,6 +92,8 @@ def cnn_train(
                 '--zipfile', data_download
             ]
         )
+
+        operations['tensorflow preprocess'].after(operations['databricks data processing'])  # noqa: E501
 
         operations['tensorflow training'] = dsl.ContainerOp(
             name="tensorflow training",
