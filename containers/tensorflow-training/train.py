@@ -232,7 +232,7 @@ if __name__ == "__main__":
         print('{} => {}'.format(i, args[i]))
 
     # Log to mlflow
-    mlflow.set_experiment("mlops")
+    mlflow.set_experiment("kubeflow-mlops")
     mlflow.set_tag("external_run_id", os.getenv("RUN_ID"))
 
     model_signature = run(**args)

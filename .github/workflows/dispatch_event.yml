@@ -1,6 +1,9 @@
 name: Dispatch Payload MAIN
 # The pipeline is triggered on:
 #  - Repository Dispatch
+# If event.client_payload.pr_num is specified, this workflow uses the
+# specified PR's event_dispatcher.py for dispatching events.  Otherwise,
+# it uses the default branch's event_dispatcher.py
 on: repository_dispatch
 
 jobs:
@@ -9,7 +12,17 @@ jobs:
 
     steps:
     - name: Copy Repository Contents
-      uses: actions/checkout@master
+      uses: actions/checkout@v2
+
+    - name: Checkout associated PR code if defined
+      if: github.event.client_payload.pr_num
+      id: checkout_pr_code
+      run: |
+        event_ref="+refs/pull/${{ github.event.client_payload.pr_num }}/merge"
+        echo "Checking out $event_ref"
+        echo "::set-output name=event_ref::$event_ref"
+        git fetch origin $event_ref
+        git checkout FETCH_HEAD
 
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
