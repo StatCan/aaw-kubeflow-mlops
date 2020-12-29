@@ -69,7 +69,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/containers/seldon-score
         mlflow_run_id=$(curl -H "Authorization: Bearer ${JWT_TOKEN}" -d '{"experiment_ids":['$MLFLOW_EXPERIMENT'],"filter":"tags.external_run_id='\'''$RUN_ID''\''"}' ${{ secrets.MLFLOW_URL }}/api/2.0/preview/mlflow/runs/search | jq -r '.runs[0].info.run_id')
-        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/api/get-artifact?path=model/data/model.h5&run_uuid='$mlflow_run_id > model.h5
+        curl -H "Authorization: Bearer ${JWT_TOKEN}" -L '${{ secrets.MLFLOW_URL }}/get-artifact?path=model/data/model.h5&run_uuid='$mlflow_run_id > model.h5
         echo "mlflow_run_id=$mlflow_run_id" >> $GITHUB_ENV
 
       env:
