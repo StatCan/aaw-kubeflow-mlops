@@ -41,7 +41,7 @@ def run():
 
         tensor = process_image(img_path, 160)
         t = tf.reshape(tensor, [-1, 160, 160, 3])
-        o = model.predict(t, steps=1)  # [0][0]
+        o = model.predict(t, steps=1)
         print(o)
         o = o[0][0]
         inference_time = datetime.timedelta(seconds=current_time - prev_time)
@@ -57,7 +57,6 @@ def run():
 
 
 def process_image(path, image_size):
-    # Extract image (from web or path)
     if path.startswith('http'):
         response = requests.get(path)
         img = np.array(Image.open(BytesIO(response.content)))
@@ -65,7 +64,6 @@ def process_image(path, image_size):
         img = np.array(Image.open(path))
 
     img_tensor = tf.convert_to_tensor(img, dtype=tf.float32)
-    # tf.image.decode_jpeg(img_raw, channels=3)
     img_final = tf.image.resize(img_tensor, [image_size, image_size]) / 255
     return img_final
 

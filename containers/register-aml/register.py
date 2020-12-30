@@ -36,19 +36,13 @@ def get_ws(tenant_id, service_principal_id,
 
 def run(mdl_path, model_name, ws, tgs):
     print(ws.get_details())
-
     print('\nSaving model {} to {}'.format(mdl_path, model_name))
-
-    # Model Path needs to be relative
     mdl_path = relpath(mdl_path, '.')
-
     Model.register(ws, model_name=model_name, model_path=mdl_path, tags=tgs)
     info("Model Registered")
 
 
 if __name__ == "__main__":
-    # print("Ok")
-    # argparse stuff for model path and model name
     parser = argparse.ArgumentParser(description='sanity check on model')
     parser.add_argument('-b', '--base_path',
                         help='directory to base folder', default='../../data')
@@ -86,7 +80,6 @@ if __name__ == "__main__":
         'model_name': args.model_name
     }
 
-    # printing out args for posterity
     for i in wsrgs:
         if i == 'service_principal_password':
             print('{} => **********'.format(i))
@@ -100,6 +93,7 @@ if __name__ == "__main__":
         tags = json.load(f)
 
     tags['run_id'] = args.run_id
+
     print('\n\nUsing the following tags:')
     for tag in tags:
         print('{} => {}'.format(tag, tags[tag]))

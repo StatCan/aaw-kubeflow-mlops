@@ -67,8 +67,6 @@ def log_dataset(name, uri, execution, labels):
 
 
 if __name__ == "__main__":
-    # print("Ok")
-    # argparse stuff for model path and model name
     parser = argparse.ArgumentParser(description='sanity check on model')
     parser.add_argument('-b', '--base_path',
                         help='directory to base folder', default='../../data')
@@ -111,5 +109,4 @@ if __name__ == "__main__":
               execution, json.dumps(labels))
 
     info('Log training data set')
-
     log_dataset(args.dataset, str(dataset), execution, json.dumps(labels))

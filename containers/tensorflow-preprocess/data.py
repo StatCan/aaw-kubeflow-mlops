@@ -51,8 +51,6 @@ def process_image(path, image_size=160):
 def walk_images(path, image_size=160):
     imgs = []
     print('Scanning {}'.format(path))
-    # find subdirectories in base path
-    # (they should be the labels)
     labels = []
     for (_, dirs, _) in os.walk(path):
         print('Found {}'.format(dirs))
@@ -72,7 +70,6 @@ def walk_images(path, image_size=160):
             try:
                 img = process_image(image, image_size)
                 assert img.shape[2] == 3, "Invalid channel count"
-                # write out good images
                 imgs.append(image)
             except img.shape[2] != 3:
                 print('{}\n'.format(image))

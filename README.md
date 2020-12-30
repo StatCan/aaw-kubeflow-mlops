@@ -10,6 +10,7 @@ The current pipelines that have been created provide the following pluggable com
 
 * [Default](pipeline/train/default.py)
 * [Convolutional Neural Network (CNN)](pipeline/train/cnn.py)
+* [Convolutional Neural Network (CNN) with DataBricks](pipeline/train/cnn_databricks.py)
 
 ## KubeFlow
 

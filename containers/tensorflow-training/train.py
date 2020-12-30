@@ -39,12 +39,10 @@ def process_image(path, label, img_size):
 
 
 def load_dataset(base_path, dset, split=None):
-    # normalize splits
     if split is None:
         split = [8, 1, 1]
     splits = np.array(split) / np.sum(np.array(split))
 
-    # find labels - parent folder names
     labels = {}
     for (_, dirs, _) in os.walk(base_path):
         print('found {}'.format(dirs))
@@ -52,19 +50,15 @@ def load_dataset(base_path, dset, split=None):
         print('using {}'.format(labels))
         break
 
-    # load all files along with idx label
     print('loading dataset from {}'.format(dset))
     with open(dset, 'r') as d:
         data = [(str(Path(line.strip()).absolute()),
                  labels[Path(line.strip()).parent.name]) for line in d.readlines()]  # noqa: E501
 
     print('dataset size: {}\nsuffling data...'.format(len(data)))
-
-    # shuffle data
     shuffle(data)
 
     print('splitting data...')
-    # split data
     train_idx = int(len(data) * splits[0])
 
     return data[:train_idx]
@@ -85,10 +79,7 @@ def run(
     img_shape = (img_size, img_size, 3)
 
     info('Loading Data Set')
-    # load dataset
     train = load_dataset(dpath, dset)
-
-    # training data
     train_data, train_labels = zip(*train)
     train_ds = Dataset.zip((Dataset.from_tensor_slices(list(train_data)),
                             Dataset.from_tensor_slices(list(train_labels)),
@@ -99,12 +90,10 @@ def run(
                             num_parallel_calls=5)
 
     train_ds = train_ds.apply(tf.data.experimental.ignore_errors())
-
     train_ds = train_ds.batch(batch_size)
     train_ds = train_ds.prefetch(buffer_size=5)
     train_ds = train_ds.repeat()
 
-    # model
     info('Creating Model')
     base_model = tf.keras.applications.MobileNetV2(input_shape=img_shape,
                                                    include_top=False,
@@ -123,51 +112,35 @@ def run(
 
     model.summary()
 
-    # training
     info('Training')
     steps_per_epoch = math.ceil(len(train) / batch_size)
     mlflow.tensorflow.autolog()
     model.fit(train_ds, epochs=epochs, steps_per_epoch=steps_per_epoch)
 
     # Log metric
-    # TODO calculate metric from based on evalution data.
-    # accuracy = model.evaluate()
     accuracy = random()  # dummy score
     metric = {
             'name': 'accuracy-score',
             'numberValue':  accuracy,
             'format': "PERCENTAGE",
         }
-    metrics = {                          # [doc] https://www.kubeflow.org/docs/pipelines/sdk/pipelines-metrics/  # noqa: E501
+    metrics = {
         'metrics': [metric]}
 
-    # TODO
-    # It would be nice to refactor all this infra code below like logging, saving files,  # noqa: E501
-    # out of this method so it just does the training and returns the model along with metrics  # noqa: E501
-
-    # Log to mlflow
     mlflow.log_metrics({"accuracy": accuracy})
-
-    # Pipeline Metric
     info('Writing Pipeline Metric')
     with file_io.FileIO('/mlpipeline-metrics.json', 'w') as f:
         json.dump(metrics, f)
-
-    # save model
     info('Saving Model')
-
-    # check existence of base model folder
     output = check_dir(output)
 
     print('Serializing into saved_model format')
     tf.saved_model.save(model, str(output))
     print('Done!')
 
-    # add time prefix folder
     file_output = str(Path(output).joinpath('latest.h5'))
     print('Serializing h5 model to:\n{}'.format(file_output))
     model.save(file_output)
-    # mlflow.log_artifact(file_output)
 
     return generate_hash(file_output, 'kf_pipeline')
 
@@ -227,11 +200,9 @@ if __name__ == "__main__":
     }
 
     dataset_signature = generate_hash(dataset, 'kf_pipeline')
-    # printing out args for posterity
     for i in args:
         print('{} => {}'.format(i, args[i]))
 
-    # Log to mlflow
     mlflow.set_experiment("kubeflow-mlops")
     mlflow.set_tag("external_run_id", os.getenv("RUN_ID"))
 
@@ -240,7 +211,6 @@ if __name__ == "__main__":
     args['dataset_signature'] = dataset_signature.upper()
     args['model_signature'] = model_signature.upper()
     args['model_type'] = 'tfv2-MobileNetV2'
-    #  mlflow.log_params(args)
     print('Writing out params...', end='')
     with open(str(params), 'w') as f:
         json.dump(args, f)
@@ -261,5 +231,3 @@ if __name__ == "__main__":
 
     with open('/mlpipeline-ui-metadata.json', 'w') as f:
         json.dump(metadata, f)
-
-    # python train.py -d train -e 3 -b 32 -l 0.0001 -o model -f train.txt
